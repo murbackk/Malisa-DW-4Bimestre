@@ -21,15 +21,15 @@ exports.listarFormadepagamentos = async (req, res) => {
 // Criar novo registro
 exports.criarFormadepagamento = async (req, res) => {
   try {
-    const { nomeformadepagamento } = req.body;
+    const { nomeformapagamento } = req.body;
 
-    if (!nomeformadepagamento) {
+    if (!nomeformapagamento) {
       return res.status(400).json({ error: 'O nome da forma de pagamento é obrigatório' });
     }
 
     const result = await query(
-      'INSERT INTO formadepagamento (nomeformadepagamento) VALUES ($1) RETURNING *',
-      [nomeformadepagamento]
+      'INSERT INTO formadepagamento (nomeformapagamento) VALUES ($1) RETURNING *',
+      [nomeformapagamento]
     );
 
     res.status(201).json(result.rows[0]);
@@ -61,15 +61,15 @@ exports.obterFormadepagamento = async (req, res) => {
 exports.atualizarFormadepagamento = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { nomeformadepagamento } = req.body;
+    const { nomeformapagamento } = req.body;
 
     const existente = await query('SELECT * FROM formadepagamento WHERE idformapagamento = $1', [id]);
     if (existente.rows.length === 0)
       return res.status(404).json({ error: 'Forma de pagamento não encontrada' });
 
     const atualizado = await query(
-      'UPDATE formadepagamento SET nomeformadepagamento = $1 WHERE idformapagamento = $2 RETURNING *',
-      [nomeformadepagamento || existente.rows[0].nomeformadepagamento, id]
+      'UPDATE formadepagamento SET nomeformapagamento = $1 WHERE idformapagamento = $2 RETURNING *',
+      [nomeformapagamento || existente.rows[0].nomeformapagamento, id]
     );
 
     res.json(atualizado.rows[0]);

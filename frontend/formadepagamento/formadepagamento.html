@@ -203,7 +203,7 @@
 
             try {
                 const dados = {
-                    nomeformadepagamento: nome
+                    nomeformapagamento: nome
                 };
 
                 let response;
@@ -310,7 +310,7 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${forma.idformapagamento}</td>
-                        <td>${forma.nomeformadepagamento}</td>
+                        <td>${forma.nomeformapagamento}</td>
                     `;
                     
                     row.addEventListener('click', function() {

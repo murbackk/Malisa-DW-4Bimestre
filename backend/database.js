@@ -4,9 +4,9 @@ const { Pool } = require('pg');
 const dbConfig = {
   host: 'localhost',
   port: 5432,
-  user: 'postgres',
-  password: 'malisa',
-  database: 'zeniteStore',
+  user: 'radames',
+  password: 'Lageado001.',
+  database: 'malisa-zeniteStore',
 
   ssl: false,
   idleTimeoutMillis: 30000,

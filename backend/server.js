@@ -4,6 +4,11 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const db = require('./database');
 
+
+app.use(express.static(path.join(__dirname, '../')));
+app.use('/imgs', express.static(path.join(__dirname, '../imgs')));
+app.use('/css', express.static(path.join(__dirname, '../')));
+
 // ==================== CONFIGURAÇÕES ====================
 
 // Origens permitidas
