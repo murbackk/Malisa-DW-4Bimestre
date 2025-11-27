@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Formas de Pagamento - Zênite</title>
+    <link rel="stylesheet" href="/frontend/global.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div>
+            <h1>CRUD Formas de Pagamento</h1>
+        </div>
+        <a href="#" onclick="voltarDashboard()">← Voltar ao Dashboard</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastro de Forma de Pagamento</h2>
+
+            <form id="formaPagamentoForm">
+                <div>
+                    <label for="searchId">Buscar por ID:</label>
+                    <div>
+                        <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+                        <button type="button" id="btnBuscar">Buscar</button>
+
+                        <button type="button" id="btnIncluir">Incluir</button>
+                        <button type="button" id="btnAlterar" style="display: none;">Alterar</button>
+                        <button type="button" id="btnExcluir" style="display: none;">Excluir</button>
+                        <button type="button" id="btnSalvar" style="display: none;">Salvar</button>
+                        <button type="button" id="btnCancelar">Cancelar</button>
+                    </div>
+                </div>
+
+                <fieldset id="formFields">
+                    <legend>Dados da Forma de Pagamento</legend>
+
+                    <div>
+                        <label for="idFormaPagamento">ID:</label>
+                        <input type="number" id="idFormaPagamento" name="idFormaPagamento" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="nomeFormaPagamento">Nome da Forma de Pagamento:</label>
+                        <input type="text" id="nomeFormaPagamento" name="nomeFormaPagamento" required disabled>
+                        <small>Ex: Dinheiro, Cartão de Crédito, Cartão de Débito, PIX, Boleto</small>
+                    </div>
+                </fieldset>
+            </form>
+        </section>
+
+        <section>
+            <h3>Lista de Formas de Pagamento</h3>
+            <div>
+                <table id="formasPagamentoTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome da Forma de Pagamento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="formasPagamentoTableBody">
+                        <!-- Dados serão carregados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="messageContainer"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/formadepagamento';
+        
+        let modoEdicao = false;
+        let formaPagamentoAtual = null;
+
+        // Elementos do DOM
+        const searchId = document.getElementById('searchId');
+        const idFormaPagamento = document.getElementById('idFormaPagamento');
+        const nomeFormaPagamento = document.getElementById('nomeFormaPagamento');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnIncluir = document.getElementById('btnIncluir');
+        const btnAlterar = document.getElementById('btnAlterar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const formasPagamentoTableBody = document.getElementById('formasPagamentoTableBody');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarTabela();
+            configurarEventos();
+        });
+
+        function configurarEventos() {
+            btnBuscar.addEventListener('click', buscarFormaPagamento);
+            btnIncluir.addEventListener('click', incluirFormaPagamento);
+            btnAlterar.addEventListener('click', alterarFormaPagamento);
+            btnExcluir.addEventListener('click', excluirFormaPagamento);
+            btnSalvar.addEventListener('click', salvarFormaPagamento);
+            btnCancelar.addEventListener('click', cancelarOperacao);
+
+            searchId.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarFormaPagamento();
+                }
+            });
+        }
+
+        async function buscarFormaPagamento() {
+            const id = parseInt(searchId.value);
+            if (!id) {
+                mostrarMensagem('Por favor, digite um ID válido.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+
+
+                
+                if (response.ok) {
+                    const formaPagamento = await response.json();
+                    preencherFormulario(formaPagamento);
+                    mostrarMensagem('Forma de pagamento encontrada!', 'success');
+                    mostrarBotoesEdicao();
+                } else if (response.status === 404) {
+                    mostrarMensagem('Forma de pagamento não encontrada.', 'error');
+                    limparFormulario();
+                } else {
+                    mostrarMensagem('Erro ao buscar forma de pagamento.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar forma de pagamento:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function incluirFormaPagamento() {
+            limparFormulario();
+            habilitarFormulario();
+            modoEdicao = false;
+            formaPagamentoAtual = null;
+            mostrarBotaoSalvar();
+            nomeFormaPagamento.focus();
+            mostrarMensagem('Preencha os dados da nova forma de pagamento.', 'info');
+        }
+
+        function alterarFormaPagamento() {
+            if (!formaPagamentoAtual) {
+                mostrarMensagem('Nenhuma forma de pagamento selecionada.', 'error');
+                return;
+            }
+            habilitarFormulario();
+            idFormaPagamento.disabled = true;
+            modoEdicao = true;
+            mostrarBotaoSalvar();
+            nomeFormaPagamento.focus();
+            mostrarMensagem('Altere os dados da forma de pagamento.', 'info');
+        }
+
+        async function excluirFormaPagamento() {
+            if (!formaPagamentoAtual) {
+                mostrarMensagem('Nenhuma forma de pagamento selecionada.', 'error');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja excluir a forma de pagamento "${formaPagamentoAtual.nomeformadepagamento}"?`)) {
+                try {
+                    const response = await fetch(`${API_URL}/${formaPagamentoAtual.idformapagamento}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok || response.status === 204) {
+                        mostrarMensagem('Forma de pagamento excluída com sucesso!', 'success');
+                        carregarTabela();
+                        limparFormulario();
+                    } else {
+                        const data = await response.json();
+                        mostrarMensagem(data.error || 'Erro ao excluir forma de pagamento.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir forma de pagamento:', error);
+                    mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+                }
+            }
+        }
+
+        async function salvarFormaPagamento() {
+            const nome = nomeFormaPagamento.value.trim();
+            
+            if (!nome) {
+                mostrarMensagem('Por favor, preencha o nome da forma de pagamento.', 'error');
+                return;
+            }
+
+            try {
+                const dados = {
+                    nomeformadepagamento: nome
+                };
+
+                let response;
+                if (modoEdicao && formaPagamentoAtual) {
+                    response = await fetch(`${API_URL}/${formaPagamentoAtual.idformapagamento}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensagem('Forma de pagamento alterada com sucesso!', 'success');
+                    }
+                } else {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok || response.status === 201) {
+                        mostrarMensagem('Forma de pagamento incluída com sucesso!', 'success');
+                    }
+                }
+
+                if (!response.ok && response.status !== 201) {
+                    const data = await response.json();
+                    mostrarMensagem(data.error || 'Erro ao salvar forma de pagamento.', 'error');
+                    return;
+                }
+
+                carregarTabela();
+                cancelarOperacao();
+            } catch (error) {
+                console.error('Erro ao salvar forma de pagamento:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function cancelarOperacao() {
+            limparFormulario();
+            desabilitarFormulario();
+            esconderBotoesEdicao();
+            modoEdicao = false;
+            formaPagamentoAtual = null;
+        }
+
+        function preencherFormulario(formaPagamento) {
+            idFormaPagamento.value = formaPagamento.idformapagamento || '';
+            nomeFormaPagamento.value = formaPagamento.nomeformadepagamento || '';
+            formaPagamentoAtual = formaPagamento;
+        }
+
+        function limparFormulario() {
+            searchId.value = '';
+            idFormaPagamento.value = '';
+            nomeFormaPagamento.value = '';
+            formaPagamentoAtual = null;
+        }
+
+        function habilitarFormulario() {
+            nomeFormaPagamento.disabled = false;
+        }
+
+        function desabilitarFormulario() {
+            idFormaPagamento.disabled = true;
+            nomeFormaPagamento.disabled = true;
+        }
+
+        function mostrarBotoesEdicao() {
+            btnAlterar.style.display = 'inline-block';
+            btnExcluir.style.display = 'inline-block';
+            btnSalvar.style.display = 'none';
+        }
+
+        function mostrarBotaoSalvar() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'inline-block';
+        }
+
+        function esconderBotoesEdicao() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'none';
+        }
+
+        async function carregarTabela() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar formas de pagamento');
+                }
+
+                const formasPagamento = await response.json();
+                formasPagamentoTableBody.innerHTML = '';
+                
+                formasPagamento.forEach(forma => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${forma.idformapagamento}</td>
+                        <td>${forma.nomeformadepagamento}</td>
+                    `;
+                    
+                    row.addEventListener('click', function() {
+                        searchId.value = forma.idformapagamento;
+                        preencherFormulario(forma);
+                        mostrarBotoesEdicao();
+                        mostrarMensagem('Forma de pagamento selecionada da tabela.', 'info');
+                    });
+                    
+                    formasPagamentoTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar tabela:', error);
+                mostrarMensagem('Erro ao carregar lista de formas de pagamento.', 'error');
+            }
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const message = document.createElement('div');
+            message.textContent = texto;
+            message.style.padding = '10px';
+            message.style.marginBottom = '10px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.right = '20px';
+            message.style.zIndex = '1000';
+            message.style.minWidth = '250px';
+            
+            if (tipo === 'success') {
+                message.style.backgroundColor = '#059669';
+            } else if (tipo === 'error') {
+                message.style.backgroundColor = '#dc2626';
+            } else {
+                message.style.backgroundColor = '#3b82f6';
+            }
+            
+            messageContainer.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        }
+
+        function voltarDashboard() {
+            if (confirm('Tem certeza que deseja voltar ao dashboard? Alterações não salvas serão perdidas.')) {
+                window.history.back();
+            }
+        }
+    </script>
+</body>
+</html>

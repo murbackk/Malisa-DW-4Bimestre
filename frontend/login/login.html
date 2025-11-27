@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="shortcut icon" href="/backend/uploads/zenite_store_logo_star.png" type="image/x-icon">
+  
+  <!-- Importação das fontes do Google para replicar o template -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+  
+  <!-- Link para o CSS de Login -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Ícones para os inputs (usando Font Awesome para simular, mas o CSS usará classes genéricas) -->
+  <style>
+    /* Estilos temporários para simular ícones */
+    .input-icon::before {
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        content: '\f007'; /* Ícone de usuário */
+    }
+    .input-group:nth-child(2) .input-icon::before {
+        content: '\f023'; /* Ícone de cadeado */
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="login-page-container">
+    
+    <!-- Cabeçalho Minimalista (Topo do Container) -->
+    <div class="login-header">
+        <div class="header-logo">
+            <!-- Usando a estrela de 4 pontas como logo -->
+            <img src="/backend/uploads/zenite_store_logo_star.png" alt="Zenite Store Logo">
+            ZENITE STORE
+        </div>
+        <div class="header-nav">
+            <a href="#"></a>
+            <a href="#"></a>
+            <a href="#"></a>
+            <a href="#"></a>
+            <a href="#"></a>
+        </div>
+        <div class="header-actions">
+            
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal (Duas Colunas) -->
+    <div class="main-content">
+        
+        <!-- Coluna de Formulário (Esquerda) -->
+        <div class="form-column">
+            
+            <!-- Ícone de usuário grande (como no template) -->
+            <div class="form-icon">
+                <!-- Ícone de usuário grande (simulado) -->
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+
+            <!-- Formulário de Login -->
+            <div id="login-container">
+                <!-- Input de Email/Username -->
+                <div class="input-group">
+                    <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="email" id="email" placeholder="USERNAME">
+                </div>
+                
+                <!-- Input de Senha -->
+                <div class="input-group">
+                    <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-lock"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <input type="password" id="senha" placeholder="PASSWORD">
+                </div>
+                
+                <!-- Botão de Login -->
+                <button id="btnLogin">LOGIN</button>
+                <p id="mensagem"></p>
+                
+                <!-- Links de Lembre-me e Esqueceu a Senha -->
+                <div class="form-links">
+                    <label>
+                        
+                    </label>
+                    
+                </div>
+            </div>
+
+            <!-- Formulário de Cadastro (Inicialmente escondido) -->
+            <div id="cadastro-container" style="display:none;">
+                <h3>Cadastro de Usuário</h3>
+                <div class="input-group">
+                    <input type="text" id="nomeCadastro" placeholder="Nome completo">
+                </div>
+                <div class="input-group">
+                    <input type="email" id="emailCadastro" placeholder="Email">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="senhaCadastro" placeholder="Senha">
+                </div>
+            
+                <label><input type="checkbox" id="ehFuncionario"> Sou funcionário</label>
+            
+                <div id="cargoContainer" style="display:none;">
+                    <input type="text" id="codigoCargo" placeholder="Código do cargo">
+                </div>
+            
+                <button id="btnSalvarCadastro">SALVAR</button>
+                <button id="btnVoltarLogin">Voltar ao Login</button>
+                <p id="msgCadastro"></p>
+            </div>
+            
+            <!-- Botão de Cadastro (Para o fluxo de voltar) -->
+            <button id="btnCadastrar" style="display:none;">Cadastrar-se</button>
+
+        </div>
+
+        <!-- Coluna de Boas-Vindas (Direita) -->
+        <div class="welcome-column">
+            <div class="welcome-content">
+                <h1 class="welcome-title">Bem-vindo.</h1>
+                <p class="welcome-text-small">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.
+                </p>
+                <p class="signup-link">
+                    Não tem conta? <a href="#" onclick="showCadastro()">Cadastre-se agora</a>
+                </p>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== CONFIGURAÇÕES ====================
+    const rotaBase = 'http://localhost:3001/login';
+
+    const loginContainer = document.getElementById('login-container');
+    const cadastroContainer = document.getElementById('cadastro-container');
+    const msg = document.getElementById('mensagem');
+    const msgCadastro = document.getElementById('msgCadastro');
+
+    // ==================== FUNÇÕES DE NAVEGAÇÃO ====================
+    
+    // Função para mostrar o formulário de cadastro
+    function showCadastro() {
+        loginContainer.style.display = 'none';
+        cadastroContainer.style.display = 'block';
+        document.querySelector('.form-links').style.display = 'none';
+        document.getElementById('btnVoltarLogin').style.display = 'block';
+    }
+
+    // Função para voltar ao login
+    document.getElementById('btnVoltarLogin').addEventListener('click', () => {
+        cadastroContainer.style.display = 'none';
+        loginContainer.style.display = 'block';
+        document.querySelector('.form-links').style.display = 'flex';
+        document.getElementById('btnVoltarLogin').style.display = 'none';
+        msgCadastro.textContent = '';
+    });
+
+    // Link de cadastro
+    document.querySelector('.signup-link a').addEventListener('click', (e) => {
+        e.preventDefault();
+        showCadastro();
+    });
+
+    // Mostrar campo de cargo se for funcionário
+    document.getElementById('ehFuncionario').addEventListener('change', (e) => {
+      document.getElementById('cargoContainer').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    // ==================== LOGIN ====================
+    
+    // ==================== LOGIN ====================
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+
+  if (!email || !senha) {
+    msg.textContent = 'Preencha email e senha.';
+    msg.style.color = 'red';
+    return;
+  }
+
+  try {
+    // 1. Verificar se o email existe
+    const respEmail = await fetch(`${rotaBase}/verificarEmail`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const dadosEmail = await respEmail.json();
+
+    if (dadosEmail.status === 'nao_encontrado') {
+      msg.textContent = 'Usuário não encontrado. Cadastre-se abaixo.';
+      msg.style.color = 'red';
+      return;
+    }
+
+    // 2. Verificar senha
+    const respSenha = await fetch(`${rotaBase}/verificarSenha`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha })
+    });
+    const dadosSenha = await respSenha.json();
+
+    if (dadosSenha.status === 'senha_incorreta') {
+      msg.textContent = 'Senha incorreta.';
+      msg.style.color = 'red';
+    } else if (dadosSenha.status === 'ok') {
+      msg.textContent = 'Login realizado com sucesso!';
+      msg.style.color = 'green';
+
+      // ✅ Salvar dados no localStorage para o index.html
+      localStorage.setItem('usuarioLogado', JSON.stringify({
+        idUsuario: dadosSenha.usuario?.idusuario || dadosEmail.usuario?.idusuario || 1, // use o ID correto retornado
+        nomeUsuario: dadosSenha.usuario?.nomeusuario || 'Usuário'
+      }));
+
+      // ✅ Redirecionar para a página inicial
+      setTimeout(() => {
+        window.location.href = '../../index.html';
+      }, 1000);
+    } else {
+      msg.textContent = 'Erro ao realizar login.';
+      msg.style.color = 'red';
+    }
+  } catch (error) {
+    console.error('Erro no login:', error);
+    msg.textContent = 'Erro de conexão. Verifique se o servidor está rodando.';
+    msg.style.color = 'red';
+  }
+});
+
+
+    // ==================== CADASTRO ====================
+    
+    document.getElementById('btnSalvarCadastro').addEventListener('click', async () => {
+      const nome = document.getElementById('nomeCadastro').value;
+      const email = document.getElementById('emailCadastro').value;
+      const senha = document.getElementById('senhaCadastro').value;
+      const ehFuncionario = document.getElementById('ehFuncionario').checked;
+      const codigoCargo = document.getElementById('codigoCargo').value;
+
+      // Validação básica
+      if (!nome || !email || !senha) {
+        msgCadastro.textContent = 'Preencha todos os campos obrigatórios.';
+        msgCadastro.style.color = 'red';
+        return;
+      }
+
+      if (ehFuncionario && !codigoCargo) {
+        msgCadastro.textContent = 'Informe o código do cargo.';
+        msgCadastro.style.color = 'red';
+        return;
+      }
+
+      try {
+        msgCadastro.textContent = 'Cadastrando usuário...';
+        msgCadastro.style.color = 'blue';
+
+        // 1. Criar usuário na tabela Usuario
+        const respUsuario = await fetch('http://localhost:3001/pessoa', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            nomeUsuario: nome,  // Campo correto: nomeUsuario
+            email: email, 
+            senha: senha 
+          })
+        });
+
+        // Verificar se o servidor respondeu
+        if (!respUsuario.ok) {
+          const errorData = await respUsuario.json();
+          console.error('Erro do servidor:', errorData);
+          msgCadastro.textContent = errorData.mensagem || `Erro ao cadastrar: ${respUsuario.status}`;
+          msgCadastro.style.color = 'red';
+          return;
+        }
+
+        const dadosUsuario = await respUsuario.json();
+        console.log('Usuário criado:', dadosUsuario);
+
+        if (dadosUsuario.status !== 'ok' || !dadosUsuario.idUsuario) {
+          msgCadastro.textContent = 'Erro: Usuário não foi criado corretamente.';
+          msgCadastro.style.color = 'red';
+          return;
+        }
+
+        const idUsuario = dadosUsuario.idUsuario;
+
+        // 2. Se for funcionário, validar cargo e cadastrar
+        if (ehFuncionario) {
+          msgCadastro.textContent = 'Verificando código do cargo...';
+          
+          const respCargo = await fetch('http://localhost:3001/cargo/verificarCodigo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ codigoCargo })
+          });
+
+          if (!respCargo.ok) {
+            msgCadastro.textContent = 'Erro ao verificar código do cargo.';
+            msgCadastro.style.color = 'red';
+            return;
+          }
+
+          const dadosCargo = await respCargo.json();
+
+          if (dadosCargo.status === 'nao_existe') {
+            msgCadastro.textContent = 'Código de cargo inválido.';
+            msgCadastro.style.color = 'red';
+            return;
+          }
+
+          const idCargo = dadosCargo.idCargo;
+
+          msgCadastro.textContent = 'Cadastrando como funcionário...';
+
+          const respFunc = await fetch('http://localhost:3001/funcionarios', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              nomeFuncionario: nome, 
+              idCargo: idCargo, 
+              idUsuario: idUsuario 
+            })
+          });
+
+          if (!respFunc.ok) {
+            const errorFunc = await respFunc.json();
+            msgCadastro.textContent = errorFunc.mensagem || 'Erro ao cadastrar funcionário.';
+            msgCadastro.style.color = 'red';
+            return;
+          }
+
+          const dadosFunc = await respFunc.json();
+          console.log('Funcionário criado:', dadosFunc);
+
+          msgCadastro.textContent = 'Funcionário cadastrado com sucesso!';
+          msgCadastro.style.color = 'green';
+          setTimeout(() => {
+            window.location.href = '../../index.html';
+          }, 1500);
+
+        } else {
+          // Usuário comum cadastrado com sucesso
+          msgCadastro.textContent = 'Usuário cadastrado com sucesso!';
+          msgCadastro.style.color = 'green';
+          setTimeout(() => {
+            window.location.href = '../../index.html';
+          }, 1500);
+        }
+
+      } catch (error) {
+        console.error('Erro completo:', error);
+        msgCadastro.textContent = `Erro: ${error.message}. Verifique se o servidor está rodando.`;
+        msgCadastro.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>

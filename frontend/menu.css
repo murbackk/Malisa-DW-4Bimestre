@@ -1,0 +1,223 @@
+/* ==========================================================================
+   Variáveis de Cor e Configurações Globais (Réplica Fiel do Template de Login Simples)
+   ========================================================================== */
+
+:root {
+    /* Cores do Template de Login */
+    --color-background: #1A053A; /* Roxo bem escuro do fundo */
+    --color-container-bg: #210B45; /* Roxo um pouco mais claro do container principal */
+    --color-text-light: #FFFFFF;
+    --color-text-faded: rgba(255, 255, 255, 0.6);
+    --color-accent-pink: #E83E8C; /* Rosa vibrante do botão */
+    --color-accent-blue: #00BFFF; /* Azul de destaque */
+
+    /* Tipografia */
+    --font-family-main: 'Inter', sans-serif;
+    --font-size-base: 16px;
+
+    /* Espaçamento */
+    --spacing-small: 8px;
+    --spacing-medium: 16px;
+    --spacing-large: 24px;
+    --spacing-xlarge: 48px;
+
+    /* Sombras */
+    --shadow-main: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Estilos Globais e Estrutura
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-main);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--color-text-light);
+    background-color: var(--color-background);
+    background-image: linear-gradient(180deg, #12002B 0%, #2E006E 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container principal que imita a janela do template */
+#menu-page-container {
+    width: 90%;
+    max-width: 1000px;
+    min-height: 600px;
+    background-color: var(--color-container-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-main);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Cabeçalho (Header) - Minimalista
+   ========================================================================== */
+
+.login-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: var(--spacing-medium) var(--spacing-large);
+    background-color: var(--color-background); /* Cor mais escura para o header */
+    flex-shrink: 0;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text-light);
+}
+
+.header-logo img {
+    height: 24px;
+}
+
+/* ==========================================================================
+   Conteúdo Principal do Menu
+   ========================================================================== */
+
+.menu-content {
+    padding: var(--spacing-xlarge);
+    flex-grow: 1;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-small);
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-accent-blue);
+    margin-top: var(--spacing-large);
+    margin-bottom: var(--spacing-medium);
+}
+
+p {
+    color: var(--color-text-faded);
+    margin-bottom: var(--spacing-large);
+}
+
+#nomeGerente {
+    font-weight: 700;
+    color: var(--color-accent-pink);
+}
+
+hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: var(--spacing-large) 0;
+}
+
+/* Botões de Gerenciamento */
+.menu-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--spacing-medium);
+    margin-bottom: var(--spacing-xlarge);
+}
+
+.menu-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-large);
+}
+
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.3s, transform 0.1s;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Botões de Ação Principal (Gerenciar) */
+.menu-buttons button {
+    background-color: var(--color-accent-blue);
+    color: var(--color-text-light);
+}
+
+.menu-buttons button:hover {
+    background-color: #00A8E0;
+    transform: translateY(-2px);
+}
+
+/* Botões Secundários (Voltar/Sair/Homepage) */
+.menu-actions button:not([onclick="logout()"]) {
+    background-color: var(--color-text-faded);
+    color: var(--color-background);
+    font-weight: 700;
+}
+
+button[onclick="logout()"] {
+    background-color: var(--color-accent-pink);
+    color: var(--color-text-light);
+}
+
+.menu-actions button:not([onclick="logout()"]):hover {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+button[onclick="logout()"]:hover {
+    background-color: #C2185B;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .menu-content {
+        padding: var(--spacing-large);
+    }
+    h1 {
+        font-size: 2rem;
+    }
+    .menu-buttons, .menu-actions {
+        flex-direction: column;
+        gap: var(--spacing-small);
+    }
+    .menu-buttons button, .menu-actions button {
+        width: 100%;
+    }
+}
+.header-nav {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.header-nav a {
+    color: var(--color-text-faded);
+    text-decoration: none;
+    margin: 0 var(--spacing-medium);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.header-nav a:hover {
+    color: var(--color-text-light);
+}

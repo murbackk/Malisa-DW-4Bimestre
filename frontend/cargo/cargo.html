@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD cargo - Zênite</title>
+    <link rel="stylesheet" href="/frontend/global.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div>
+            <h1>CRUD cargo</h1>
+        </div>
+        <a href="#" onclick="voltarDashboard()">← Voltar ao Dashboard</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastro de Cargo</h2>
+
+            <form id="cargoForm">
+                <div>
+                    <label for="searchId">Buscar por ID:</label>
+                    <div>
+                        <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+                        <button type="button" id="btnBuscar">Buscar</button>
+
+                        <button type="button" id="btnIncluir">Incluir</button>
+                        <button type="button" id="btnAlterar" style="display: none;">Alterar</button>
+                        <button type="button" id="btnExcluir" style="display: none;">Excluir</button>
+                        <button type="button" id="btnSalvar" style="display: none;">Salvar</button>
+                        <button type="button" id="btnCancelar">Cancelar</button>
+                    </div>
+                </div>
+
+                <fieldset id="formFields">
+                    <legend>Dados do Cargo</legend>
+
+                    <div>
+                        <label for="idCargo">ID do Cargo:</label>
+                        <input type="number" id="idCargo" name="idCargo" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="nomeCargo">Nome do Cargo:</label>
+                        <input type="text" id="nomeCargo" name="nomeCargo" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="codigoCargo">Código do Cargo:</label>
+                        <input type="text" id="codigoCargo" name="codigoCargo" required disabled>
+                        <small>Ex: GER123, WEB456, VEN789</small>
+                    </div>
+                </fieldset>
+            </form>
+        </section>
+
+        <section>
+            <h3>Lista de cargo</h3>
+            <div>
+                <table id="cargoTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome do Cargo</th>
+                            <th>Código</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cargoTableBody">
+                        <!-- Dados serão carregados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="messageContainer"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/cargos';
+        
+        let modoEdicao = false;
+        let cargoAtual = null;
+
+        // Elementos do DOM
+        const searchId = document.getElementById('searchId');
+        const idCargo = document.getElementById('idCargo');
+        const nomeCargo = document.getElementById('nomeCargo');
+        const codigoCargo = document.getElementById('codigoCargo');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnIncluir = document.getElementById('btnIncluir');
+        const btnAlterar = document.getElementById('btnAlterar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const cargoTableBody = document.getElementById('cargoTableBody');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarTabela();
+            configurarEventos();
+        });
+
+        function configurarEventos() {
+            btnBuscar.addEventListener('click', buscarCargo);
+            btnIncluir.addEventListener('click', incluirCargo);
+            btnAlterar.addEventListener('click', alterarCargo);
+            btnExcluir.addEventListener('click', excluirCargo);
+            btnSalvar.addEventListener('click', salvarCargo);
+            btnCancelar.addEventListener('click', cancelarOperacao);
+
+            searchId.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarCargo();
+                }
+            });
+        }
+
+        async function buscarCargo() {
+            const id = parseInt(searchId.value);
+            if (!id) {
+                mostrarMensagem('Por favor, digite um ID válido.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                
+                if (response.ok) {
+                    const cargo = await response.json();
+                    preencherFormulario(cargo);
+                    mostrarMensagem('Cargo encontrado!', 'success');
+                    mostrarBotoesEdicao();
+                } else if (response.status === 404) {
+                    mostrarMensagem('Cargo não encontrado.', 'error');
+                    limparFormulario();
+                } else {
+                    mostrarMensagem('Erro ao buscar cargo.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar cargo:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function incluirCargo() {
+            limparFormulario();
+            habilitarFormulario();
+            modoEdicao = false;
+            cargoAtual = null;
+            mostrarBotaoSalvar();
+            idCargo.focus();
+            mostrarMensagem('Preencha os dados do novo cargo.', 'info');
+        }
+
+        function alterarCargo() {
+            if (!cargoAtual) {
+                mostrarMensagem('Nenhum cargo selecionado.', 'error');
+                return;
+            }
+            habilitarFormulario();
+            idCargo.disabled = true; // ID não pode ser alterado
+            modoEdicao = true;
+            mostrarBotaoSalvar();
+            nomeCargo.focus();
+            mostrarMensagem('Altere os dados do cargo.', 'info');
+        }
+
+        async function excluirCargo() {
+            if (!cargoAtual) {
+                mostrarMensagem('Nenhum cargo selecionado.', 'error');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja excluir o cargo "${cargoAtual.nomecargo}"?`)) {
+                try {
+                    const response = await fetch(`${API_URL}/${cargoAtual.idcargo}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok || response.status === 204) {
+                        mostrarMensagem('Cargo excluído com sucesso!', 'success');
+                        carregarTabela();
+                        limparFormulario();
+                    } else {
+                        const data = await response.json();
+                        mostrarMensagem(data.error || 'Erro ao excluir cargo.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir cargo:', error);
+                    mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+                }
+            }
+        }
+
+        async function salvarCargo() {
+            const id = parseInt(idCargo.value);
+            const nome = nomeCargo.value.trim();
+            const codigo = codigoCargo.value.trim();
+            
+            if (!nome || !codigo) {
+                mostrarMensagem('Por favor, preencha todos os campos obrigatórios.', 'error');
+                return;
+            }
+
+            if (!modoEdicao && !id) {
+                mostrarMensagem('Por favor, informe o ID do cargo.', 'error');
+                return;
+            }
+
+            try {
+                const dados = {
+                    nomecargo: nome,
+                    codigocargo: codigo
+                };
+
+                let response;
+                if (modoEdicao && cargoAtual) {
+                    response = await fetch(`${API_URL}/${cargoAtual.idcargo}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensagem('Cargo alterado com sucesso!', 'success');
+                    }
+                } else {
+                    dados.idcargo = id;
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok || response.status === 201) {
+                        mostrarMensagem('Cargo incluído com sucesso!', 'success');
+                    }
+                }
+
+                if (!response.ok && response.status !== 201) {
+                    const data = await response.json();
+                    mostrarMensagem(data.error || 'Erro ao salvar cargo.', 'error');
+                    return;
+                }
+
+                carregarTabela();
+                cancelarOperacao();
+            } catch (error) {
+                console.error('Erro ao salvar cargo:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function cancelarOperacao() {
+            limparFormulario();
+            desabilitarFormulario();
+            esconderBotoesEdicao();
+            modoEdicao = false;
+            cargoAtual = null;
+        }
+
+        function preencherFormulario(cargo) {
+            idCargo.value = cargo.idcargo || '';
+            nomeCargo.value = cargo.nomecargo || '';
+            codigoCargo.value = cargo.codigocargo || '';
+            cargoAtual = cargo;
+        }
+
+        function limparFormulario() {
+            searchId.value = '';
+            idCargo.value = '';
+            nomeCargo.value = '';
+            codigoCargo.value = '';
+            cargoAtual = null;
+        }
+
+        function habilitarFormulario() {
+            idCargo.disabled = false;
+            nomeCargo.disabled = false;
+            codigoCargo.disabled = false;
+        }
+
+        function desabilitarFormulario() {
+            idCargo.disabled = true;
+            nomeCargo.disabled = true;
+            codigoCargo.disabled = true;
+        }
+
+        function mostrarBotoesEdicao() {
+            btnAlterar.style.display = 'inline-block';
+            btnExcluir.style.display = 'inline-block';
+            btnSalvar.style.display = 'none';
+        }
+
+        function mostrarBotaoSalvar() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'inline-block';
+        }
+
+        function esconderBotoesEdicao() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'none';
+        }
+
+        async function carregarTabela() {
+            try {
+                const response = await fetch(API_URL);
+                
+               if (!response.ok) {
+                   const errorData = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
+                  throw new Error(`Erro ao carregar cargo: ${response.status} - ${errorData.message || response.statusText}`);
+                }
+
+                const cargo = await response.json();
+                cargoTableBody.innerHTML = '';
+                
+                cargo.forEach(cargo => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${cargo.idcargo}</td>
+                        <td>${cargo.nomecargo}</td>
+                        <td>${cargo.codigocargo}</td>
+                    `;
+                    
+                    row.addEventListener('click', function() {
+                        searchId.value = cargo.idcargo;
+                        preencherFormulario(cargo);
+                        mostrarBotoesEdicao();
+                        mostrarMensagem('Cargo selecionado da tabela.', 'info');
+                    });
+                    
+                    cargoTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar tabela:', error);
+                mostrarMensagem('Erro ao carregar lista de cargo.', 'error');
+            }
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const message = document.createElement('div');
+            message.textContent = texto;
+            message.style.padding = '10px';
+            message.style.marginBottom = '10px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.right = '20px';
+            message.style.zIndex = '1000';
+            message.style.minWidth = '250px';
+            
+            if (tipo === 'success') {
+                message.style.backgroundColor = '#059669';
+            } else if (tipo === 'error') {
+                message.style.backgroundColor = '#dc2626';
+            } else {
+                message.style.backgroundColor = '#3b82f6';
+            }
+            
+            messageContainer.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        }
+
+        function voltarDashboard() {
+            if (confirm('Tem certeza que deseja voltar ao dashboard? Alterações não salvas serão perdidas.')) {
+                window.history.back();
+            }
+        }
+    </script>
+</body>
+</html>

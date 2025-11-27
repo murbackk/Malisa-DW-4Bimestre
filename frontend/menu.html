@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gerente</title>
+    <link rel="shortcut icon" href="/backend/uploads/zenite_store_logo_star.png" type="image/x-icon">
+    
+    <!-- Importação das fontes do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    
+    <!-- Link para o CSS de Menu -->
+    <link rel="stylesheet" href="menu.css">
+</head>
+<body>
+    
+    <div id="menu-page-container">
+        
+        <!-- Cabeçalho Minimalista (Topo do Container) -->
+        <div class="login-header">
+            <div class="header-logo">
+                <!-- Usando a estrela de 4 pontas como logo -->
+                <img src="/backend/uploads/zenite_store_logo_star.png" alt="Zenite Store Logo">
+                ZENITE STORE
+            </div>
+            <div class="header-nav">
+            <a onclick="abrirCrud('cargo')">Gerenciar Cargos</a>
+            <a onclick="abrirCrud('funcionario')">Gerenciar Funcionários</a>
+            <a onclick="abrirCrud('formadepagamento')">Gerenciar Formas de Pagamento</a>
+            <a onclick="abrirCrud('pedido')">Gerenciar Pedidos</a>
+            <a onclick="abrirCrud('pessoa')">Gerenciar Pessoas</a>
+            <a onclick="abrirCrud('produto')">Gerenciar Produtos</a>
+        </div>
+        </div>
+
+        <!-- Conteúdo Principal do Menu -->
+        <div class="menu-content">
+            
+            <h1>Dashboard do Gerente</h1>
+            <p>Bem-vindo, <span id="nomeGerente">Gerente</span>!</p>
+            
+          
+            
+            <div class="menu-actions">
+                <button onclick="homepage()">Homepage</button>
+                <button onclick="logout()">Sair</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function homepage() {
+            window.location.href = '../index.html';
+        }
+
+        // Abrir CRUD específico
+        function abrirCrud(tipo) {
+            window.location.href = `${tipo}/${tipo}.html`;
+        }
+
+        // Voltar ao início
+        function voltarInicio() {
+            window.location.href = '../../index.html';
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await fetch('http://localhost:3001/api/menu/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+            }
+            
+            localStorage.removeItem('usuarioLogado');
+            alert('Logout realizado com sucesso!');
+            window.location.href = '../../index.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenite Store</title>
+    <link rel="shortcut icon" href="backend/uploads/zenite_store_logo_star.png" type="image/x-icon">
+   <!-- Importação das fontes do Google para replicar o template -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    
+    <!-- Link para o CSS -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <!-- O restante do HTML do usuário (header, container, modal, script) -->
+    <div class="header">
+        <div class="header-logo">
+        <img src="backend/uploads/zenite_store_logo_star.png" alt="Zenite Store Logo">
+        <div class="logo">Zenite Store</div></div>
+        <div class="user-section">
+            <div id="welcomeSection" style="display: none;">
+                <button id="gerenciarBtn" class="btn btn-secondary" onclick="goToGerenciar()" style="display: none;">Gerenciar</button>
+                <button class="btn btn-danger" onclick="logout()">Sair</button>
+            </div>
+            <div id="loginSection">
+                <button class="btn btn-primary" onclick="goToLogin()">Login/Cadastro</button>
+            </div>
+            <button class="btn cart-btn" onclick="openCart()">
+                Carrinho
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alertContainer"></div>
+        
+        <!-- Seção de destaque inspirada no template -->
+        <section class="hero-section">
+            <p class="hero-subtitle">Inspire-se para criar e crie para inspirar.</p>
+            <h1 class="hero-title">Use Zenite.</h1>
+            <p class="hero-description">
+                A loja mais exclusiva da galáxia, aquela que atinge o ponto mais alto no céu, o ápice, o topo.
+            </p>
+            <button class="btn btn-primary hero-btn" onclick="goToLogin()" id="loginbody">FAZER LOGIN</button>
+        </section>
+
+        <div id="produtosContainer" class="produtos-grid"></div>
+        <div id="loadingContainer" class="loading">Carregando produtos...</div>
+    </div>
+
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">MEU CARRINHO</h2>
+                <button class="close-btn" onclick="closeCart()">&times;</button>
+            </div>
+            <div id="cartItems"></div>
+            <div class="cart-total">
+                Total: R$ <span id="cartTotalValue">0.00</span>
+            </div>
+            <div class="cart-actions">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="finalizarCompra()">Finalizar Compra</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let carrinho = [];
+        let produtos = [];
+        let usuarioLogado = null;
+
+        window.addEventListener('load', () => {
+         verificarLogin();
+         carregarProdutos();
+        });
+
+        // Verifica se usuário está logado
+        function verificarLogin() {
+            const user = localStorage.getItem('usuarioLogado');
+            if (user) {
+                usuarioLogado = JSON.parse(user);
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('welcomeSection').style.display = 'flex';
+                document.getElementById('loginbody').style.display = 'none';
+            
+
+
+                // Verificar se é gerente
+                verificarGerente(usuarioLogado.idUsuario);
+            } else {
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('welcomeSection').style.display = 'none';
+            }
+        }
+
+        // Verificar se o usuário é gerente
+        async function verificarGerente(idUsuario) {
+            try {
+                const response = await fetch(`http://localhost:3001/login/verificarGerente?idusuario=${idUsuario}`);
+                const data = await response.json();
+                if (data.isGerente) {
+                    document.getElementById('gerenciarBtn').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar se é gerente:', error);
+            }
+        }
+
+        // Ir para página de gerenciamento
+        function goToGerenciar() {
+            window.location.href = 'frontend/menu.html'; // Ajuste o caminho conforme necessário
+        }
+
+       // index.html (Linhas 92-97 após a correção)
+
+// Carregar produtos
+async function carregarProdutos() {
+    try {
+        const response = await fetch('http://localhost:3001/produto' ); // Rota corrigida
+        if (!response.ok) { // Adicionado tratamento para erros HTTP
+            throw new Error(`Erro HTTP: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        produtos = Array.isArray(data) ? data : []; // Garante que 'produtos' é um array
+        renderizarProdutos();
+        // ...
+    } catch (error) {
+        // ...
+    }
+}
+
+        // Renderizar produtos
+        function renderizarProdutos() {
+            const container = document.getElementById('produtosContainer');
+            container.innerHTML = '';
+
+            if (produtos.length === 0) {
+                container.innerHTML = '<p style="color: white; text-align: center; width: 100%;">Nenhum produto disponível no momento.</p>';
+                return;
+            }
+
+            produtos.forEach(produto => {
+                const card = document.createElement('div');
+                card.className = 'produto-card';
+                card.innerHTML = `
+                    <div class="produto-imagem">
+                        ${produto.imagem ? `<img src="${produto.imagem}" alt="${produto.nomeproduto}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">` : '📦 Sem imagem'}
+                    </div>
+                    <h3 class="produto-nome">${produto.nomeproduto}</h3>
+                    <p class="produto-preco">R$ ${parseFloat(produto.precounitario).toFixed(2)}</p>
+                    <div class="produto-actions">
+                        <input type="number" class="quantidade-input" value="1" min="1" id="qtd-${produto.idproduto}">
+                        <button class="btn-add-cart" onclick="adicionarAoCarrinho(${produto.idproduto})">
+                            Adicionar
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Adicionar ao carrinho
+        function adicionarAoCarrinho(idProduto) {
+            const produto = produtos.find(p => p.idproduto === idProduto);
+            const quantidade = parseInt(document.getElementById(`qtd-${idProduto}`).value);
+
+            if (!produto || quantidade < 1) return;
+
+            const itemExistente = carrinho.find(item => item.idproduto === idProduto);
+
+            if (itemExistente) {
+                itemExistente.quantidade += quantidade;
+            } else {
+                carrinho.push({
+                    idproduto: produto.idproduto,
+                    nomeproduto: produto.nomeproduto,
+                    precounitario: parseFloat(produto.precounitario),
+                    quantidade: quantidade
+                });
+            }
+
+            atualizarCarrinho();
+            mostrarAlerta('Produto adicionado ao carrinho!', 'success');
+        }
+
+         // Proteção para página de pagamento
+        function protegerPaginaPagamento() {
+            // Esta função será usada na página de pagamento
+            const user = localStorage.getItem('usuarioLogado');
+            if (!user) {
+                alert('Ei, quem é você? Faça login ou cadastro para prosseguir!');
+                window.location.href = '../../index.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Atualizar carrinho
+        function atualizarCarrinho() {
+            const count = carrinho.reduce((total, item) => total + item.quantidade, 0);
+            document.getElementById('cartCount').textContent = count;
+        }
+
+        // Abrir carrinho
+        function openCart() {
+            renderizarCarrinho();
+            document.getElementById('cartModal').classList.add('active');
+        }
+
+        // Fechar carrinho
+        function closeCart() {
+            document.getElementById('cartModal').classList.remove('active');
+        }
+
+        // Renderizar carrinho
+        function renderizarCarrinho() {
+            const container = document.getElementById('cartItems');
+            
+            if (carrinho.length === 0) {
+                container.innerHTML = '<div class="empty-cart">Seu carrinho está vazio</div>';
+                document.getElementById('cartTotalValue').textContent = '0.00';
+                return;
+            }
+
+            container.innerHTML = '';
+            let total = 0;
+
+            carrinho.forEach((item, index) => {
+                const subtotal = item.precounitario * item.quantidade;
+                total += subtotal;
+
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.nomeproduto}</div>
+                        <div class="cart-item-details">
+                            Quantidade: ${item.quantidade} | 
+                            Preço: R$ ${item.precounitario.toFixed(2)} | 
+                            Subtotal: R$ ${subtotal.toFixed(2)}
+                        </div>
+                    </div>
+                    <button class="cart-item-remove" onclick="removerDoCarrinho(${index})">Remover</button>
+                `;
+                container.appendChild(cartItem);
+            });
+
+            document.getElementById('cartTotalValue').textContent = total.toFixed(2);
+        }
+
+        // Remover do carrinho
+        function removerDoCarrinho(index) {
+            carrinho.splice(index, 1);
+            atualizarCarrinho();
+            renderizarCarrinho();
+            mostrarAlerta('Produto removido do carrinho', 'success');
+        }
+
+        // Finalizar compra
+        async function finalizarCompra() {
+            if (!usuarioLogado) {
+                mostrarAlerta('Você precisa estar logado para finalizar a compra!', 'error');
+                setTimeout(() => goToLogin(), 2000);
+                return;
+            }
+
+            if (carrinho.length === 0) {
+                mostrarAlerta('Seu carrinho está vazio!', 'error');
+                return;
+            }
+
+            try {
+                const valorTotal = carrinho.reduce((total, item) => 
+                    total + (item.precounitario * item.quantidade), 0
+                );
+
+                const pedidoData = {
+                    idUsuario: usuarioLogado.idUsuario,
+                    valorTotal: valorTotal,
+                    produtos: carrinho.map(item => ({
+                        idProduto: item.idproduto,
+                        quantidade: item.quantidade,
+                        precoUnitario: item.precounitario
+                    }))
+                };
+
+                const response = await fetch('http://localhost:3001/api/pedidos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(pedidoData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('pedidoId', result.pedido.idpedido);
+                    mostrarAlerta('Pedido registrado com sucesso!', 'success');
+                    carrinho = [];
+                    atualizarCarrinho();
+                    closeCart();
+                    
+                    setTimeout(() => {
+                        window.location.href = 'frontend/pagamento/pagamento.html';
+                    }, 1500);
+                } else {
+                    throw new Error(result.message || 'Erro ao criar pedido');
+                }
+            } catch (error) {
+                console.error('Erro ao finalizar compra:', error);
+                mostrarAlerta('Erro ao finalizar compra. Tente novamente.', 'error');
+            }
+        }
+
+        // Mostrar alerta
+        function mostrarAlerta(mensagem, tipo) {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `<div class="alert alert-${tipo} active">${mensagem}</div>`;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 3001);
+        }
+
+        // Ir para login
+        function goToLogin() {
+            window.location.href = 'frontend/login/login.html';
+        }
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('usuarioLogado');
+            usuarioLogado = null;
+            carrinho = [];
+            atualizarCarrinho();
+            verificarLogin();
+            mostrarAlerta('Logout realizado com sucesso!', 'success');
+        }
+
+    
+    </script>
+</body>
+</html>

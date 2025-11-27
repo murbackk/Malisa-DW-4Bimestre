@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Usuários - Zênite</title>
+    <link rel="stylesheet" href="/frontend/global.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div>
+            <h1>CRUD Usuários</h1>
+        </div>
+        <a href="#" onclick="voltarDashboard()">← Voltar ao Dashboard</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastro de Usuário</h2>
+
+            <form id="usuarioForm">
+                <div>
+                    <label for="searchId">Buscar por ID:</label>
+                    <div>
+                        <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+                        <button type="button" id="btnBuscar">Buscar</button>
+
+                        <button type="button" id="btnIncluir">Incluir</button>
+                        <button type="button" id="btnAlterar" style="display: none;">Alterar</button>
+                        <button type="button" id="btnExcluir" style="display: none;">Excluir</button>
+                        <button type="button" id="btnSalvar" style="display: none;">Salvar</button>
+                        <button type="button" id="btnCancelar">Cancelar</button>
+                    </div>
+                </div>
+
+                <fieldset id="formFields">
+                    <legend>Dados do Usuário</legend>
+
+                    <div>
+                        <label for="nomeUsuario">Nome do usuário:</label>
+                        <input type="text" id="nomeUsuario" name="nomeUsuario" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="email">E-mail:</label>
+                        <input type="email" id="email" name="email" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="senha">Senha:</label>
+                        <input type="password" id="senha" name="senha" required disabled>
+                    </div>
+                </fieldset>
+            </form>
+        </section>
+
+        <section>
+            <h3>Lista de Usuários</h3>
+            <div>
+                <table id="usuariosTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuariosTableBody">
+                        <!-- Dados serão carregados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="messageContainer"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/pessoa';
+        
+        let modoEdicao = false;
+        let usuarioAtual = null;
+
+        // Elementos do DOM
+        const searchId = document.getElementById('searchId');
+        const nomeUsuario = document.getElementById('nomeUsuario');
+        const email = document.getElementById('email');
+        const senha = document.getElementById('senha');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnIncluir = document.getElementById('btnIncluir');
+        const btnAlterar = document.getElementById('btnAlterar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const usuariosTableBody = document.getElementById('usuariosTableBody');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarTabela();
+            configurarEventos();
+        });
+
+        function configurarEventos() {
+            btnBuscar.addEventListener('click', buscarUsuario);
+            btnIncluir.addEventListener('click', incluirUsuario);
+            btnAlterar.addEventListener('click', alterarUsuario);
+            btnExcluir.addEventListener('click', excluirUsuario);
+            btnSalvar.addEventListener('click', salvarUsuario);
+            btnCancelar.addEventListener('click', cancelarOperacao);
+
+            searchId.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarUsuario();
+                }
+            });
+        }
+
+        async function buscarUsuario() {
+            const id = parseInt(searchId.value);
+            if (!id) {
+                mostrarMensagem('Por favor, digite um ID válido.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                
+                if (response.ok) {
+                    const usuario = await response.json();
+                    preencherFormulario(usuario);
+                    mostrarMensagem('Usuário encontrado!', 'success');
+                    mostrarBotoesEdicao();
+                } else if (response.status === 404) {
+                    mostrarMensagem('Usuário não encontrado.', 'error');
+                    limparFormulario();
+                } else {
+                    mostrarMensagem('Erro ao buscar usuário.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar usuário:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function incluirUsuario() {
+            limparFormulario();
+            habilitarFormulario();
+            modoEdicao = false;
+            usuarioAtual = null;
+            mostrarBotaoSalvar();
+            nomeUsuario.focus();
+            mostrarMensagem('Preencha os dados do novo usuário.', 'info');
+        }
+
+        function alterarUsuario() {
+            if (!usuarioAtual) {
+                mostrarMensagem('Nenhum usuário selecionado.', 'error');
+                return;
+            }
+            habilitarFormulario();
+            modoEdicao = true;
+            mostrarBotaoSalvar();
+            nomeUsuario.focus();
+            mostrarMensagem('Altere os dados do usuário.', 'info');
+        }
+
+        async function excluirUsuario() {
+            if (!usuarioAtual) {
+                mostrarMensagem('Nenhum usuário selecionado.', 'error');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja excluir o usuário "${usuarioAtual.nomeusuario}"?`)) {
+                try {
+                    const response = await fetch(`${API_URL}/${usuarioAtual.idusuario}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok || response.status === 204) {
+                        mostrarMensagem('Usuário excluído com sucesso!', 'success');
+                        carregarTabela();
+                        limparFormulario();
+                    } else {
+                        const data = await response.json();
+                        mostrarMensagem(data.error || 'Erro ao excluir usuário.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir usuário:', error);
+                    mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+                }
+            }
+        }
+
+        async function salvarUsuario() {
+            const nome = nomeUsuario.value.trim();
+            const emailVal = email.value.trim();
+            const senhaVal = senha.value.trim();
+            
+            if (!nome || !emailVal || !senhaVal) {
+                mostrarMensagem('Por favor, preencha todos os campos obrigatórios.', 'error');
+                return;
+            }
+
+            // Validação básica de email
+            if (!emailVal.includes('@')) {
+                mostrarMensagem('Por favor, insira um e-mail válido.', 'error');
+                return;
+            }
+
+            try {
+                const dados = {
+                    nomeUsuario: nome,
+                    email: emailVal,
+                    senha: senhaVal
+                };
+
+                let response;
+                if (modoEdicao && usuarioAtual) {
+                    response = await fetch(`${API_URL}/${usuarioAtual.idusuario}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensagem('Usuário alterado com sucesso!', 'success');
+                    }
+                } else {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok || response.status === 201) {
+                        mostrarMensagem('Usuário incluído com sucesso!', 'success');
+                    }
+                }
+
+                if (!response.ok && response.status !== 201) {
+                    const data = await response.json();
+                    mostrarMensagem(data.error || data.mensagem || 'Erro ao salvar usuário.', 'error');
+                    return;
+                }
+
+                carregarTabela();
+                cancelarOperacao();
+            } catch (error) {
+                console.error('Erro ao salvar usuário:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function cancelarOperacao() {
+            limparFormulario();
+            desabilitarFormulario();
+            esconderBotoesEdicao();
+            modoEdicao = false;
+            usuarioAtual = null;
+        }
+
+        function preencherFormulario(usuario) {
+            nomeUsuario.value = usuario.nomeusuario || '';
+            email.value = usuario.email || '';
+            senha.value = ''; // Não preenche senha por segurança
+            usuarioAtual = usuario;
+        }
+
+        function limparFormulario() {
+            searchId.value = '';
+            nomeUsuario.value = '';
+            email.value = '';
+            senha.value = '';
+            usuarioAtual = null;
+        }
+
+        function habilitarFormulario() {
+            nomeUsuario.disabled = false;
+            email.disabled = false;
+            senha.disabled = false;
+        }
+
+        function desabilitarFormulario() {
+            nomeUsuario.disabled = true;
+            email.disabled = true;
+            senha.disabled = true;
+        }
+
+        function mostrarBotoesEdicao() {
+            btnAlterar.style.display = 'inline-block';
+            btnExcluir.style.display = 'inline-block';
+            btnSalvar.style.display = 'none';
+        }
+
+        function mostrarBotaoSalvar() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'inline-block';
+        }
+
+        function esconderBotoesEdicao() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'none';
+        }
+
+        async function carregarTabela() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar usuários');
+                }
+
+                const usuarios = await response.json();
+                usuariosTableBody.innerHTML = '';
+                
+                usuarios.forEach(usuario => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${usuario.idusuario}</td>
+                        <td>${usuario.nomeusuario}</td>
+                        <td>${usuario.email}</td>
+                    `;
+                    
+                    row.addEventListener('click', function() {
+                        searchId.value = usuario.idusuario;
+                        preencherFormulario(usuario);
+                        mostrarBotoesEdicao();
+                        mostrarMensagem('Usuário selecionado da tabela.', 'info');
+                    });
+                    
+                    usuariosTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar tabela:', error);
+                mostrarMensagem('Erro ao carregar lista de usuários.', 'error');
+            }
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const message = document.createElement('div');
+            message.textContent = texto;
+            message.style.padding = '10px';
+            message.style.marginBottom = '10px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.right = '20px';
+            message.style.zIndex = '1000';
+            message.style.minWidth = '250px';
+            
+            if (tipo === 'success') {
+                message.style.backgroundColor = '#059669';
+            } else if (tipo === 'error') {
+                message.style.backgroundColor = '#dc2626';
+            } else {
+                message.style.backgroundColor = '#3b82f6';
+            }
+            
+            messageContainer.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        }
+
+        function voltarDashboard() {
+            if (confirm('Tem certeza que deseja voltar ao dashboard? Alterações não salvas serão perdidas.')) {
+                window.history.back();
+            }
+        }
+    </script>
+</body>
+</html>

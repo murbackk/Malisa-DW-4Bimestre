@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Pedidos - Zênite</title>
+    <link rel="stylesheet" href="/frontend/global.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div>
+            <h1>CRUD Pedidos</h1>
+        </div>
+        <a href="#" onclick="voltarDashboard()">← Voltar ao Dashboard</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastro de Pedido</h2>
+
+            <form id="pedidoForm">
+                <div>
+                    <label for="searchId">Buscar por ID:</label>
+                    <div>
+                        <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+                        <button type="button" id="btnBuscar">Buscar</button>
+
+                        <button type="button" id="btnIncluir">Incluir</button>
+                        <button type="button" id="btnAlterar" style="display: none;">Alterar</button>
+                        <button type="button" id="btnExcluir" style="display: none;">Excluir</button>
+                        <button type="button" id="btnSalvar" style="display: none;">Salvar</button>
+                        <button type="button" id="btnCancelar">Cancelar</button>
+                    </div>
+                </div>
+
+                <fieldset id="formFields">
+                    <legend>Dados do Pedido</legend>
+
+                    <div>
+                        <label for="idCliente">Cliente:</label>
+                        <select id="idCliente" name="idCliente" required disabled>
+                            <option value="">Selecione um cliente</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="idUsuario">Funcionário:</label>
+                        <select id="idUsuario" name="idUsuario" required disabled>
+                            <option value="">Selecione um funcionário</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Valor Total:</label>
+                        <input type="text" id="valorTotal" disabled readonly value="R$ 0,00">
+                    </div>
+                </fieldset>
+
+                <fieldset id="produtosFields">
+                    <legend>Produtos do Pedido</legend>
+                    
+                    <div>
+                        <label for="produtoSelect">Adicionar Produto:</label>
+                        <select id="produtoSelect" disabled>
+                            <option value="">Selecione um produto</option>
+                        </select>
+                        <input type="number" id="quantidadeProduto" placeholder="Quantidade" min="1" value="1" disabled>
+                        <button type="button" id="btnAdicionarProduto" disabled>Adicionar</button>
+                    </div>
+
+                    <div>
+                        <table id="produtosTable">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Quantidade</th>
+                                    <th>Subtotal</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="produtosTableBody">
+                                <!-- Produtos adicionados -->
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </form>
+        </section>
+
+        <section>
+            <h3>Lista de Pedidos</h3>
+            <div>
+                <table id="pedidosTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Funcionário</th>
+                            <th>Data</th>
+                            <th>Valor Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pedidosTableBody">
+                        <!-- Dados serão carregados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="messageContainer"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/pedido';
+        
+        let modoEdicao = false;
+        let pedidoAtual = null;
+        let produtosSelecionados = [];
+        let listaProdutos = [];
+        let listaClientes = [];
+        let listaFuncionarios = [];
+
+        // Elementos do DOM
+        const searchId = document.getElementById('searchId');
+        const idCliente = document.getElementById('idCliente');
+        const idUsuario = document.getElementById('idUsuario');
+        const valorTotal = document.getElementById('valorTotal');
+        const produtoSelect = document.getElementById('produtoSelect');
+        const quantidadeProduto = document.getElementById('quantidadeProduto');
+        const btnAdicionarProduto = document.getElementById('btnAdicionarProduto');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnIncluir = document.getElementById('btnIncluir');
+        const btnAlterar = document.getElementById('btnAlterar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const pedidosTableBody = document.getElementById('pedidosTableBody');
+        const produtosTableBody = document.getElementById('produtosTableBody');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarTabela();
+            carregarDadosAuxiliares();
+            configurarEventos();
+        });
+
+        function configurarEventos() {
+            btnBuscar.addEventListener('click', buscarPedido);
+            btnIncluir.addEventListener('click', incluirPedido);
+            btnAlterar.addEventListener('click', alterarPedido);
+            btnExcluir.addEventListener('click', excluirPedido);
+            btnSalvar.addEventListener('click', salvarPedido);
+            btnCancelar.addEventListener('click', cancelarOperacao);
+            btnAdicionarProduto.addEventListener('click', adicionarProduto);
+
+            searchId.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarPedido();
+                }
+            });
+        }
+
+        async function carregarDadosAuxiliares() {
+            try {
+                // Carregar clientes
+                const resClientes = await fetch(`${API_URL}/clientes`);
+                listaClientes = await resClientes.json();
+                idCliente.innerHTML = '<option value="">Selecione um cliente</option>';
+                listaClientes.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.idcliente;
+                    option.textContent = cliente.nomecliente;
+                    idCliente.appendChild(option);
+                });
+
+                // Carregar funcionários
+                const resFuncionarios = await fetch(`${API_URL}/funcionarios`);
+                listaFuncionarios = await resFuncionarios.json();
+                idUsuario.innerHTML = '<option value="">Selecione um funcionário</option>';
+                listaFuncionarios.forEach(func => {
+                    const option = document.createElement('option');
+                    option.value = func.idfuncionario;
+                    option.textContent = `${func.nomefuncionario} - ${func.nomecargo}`;
+                    idUsuario.appendChild(option);
+                });
+
+                // Carregar produtos
+                const resProdutos = await fetch(`${API_URL}/produtos`);
+                listaProdutos = await resProdutos.json();
+                produtoSelect.innerHTML = '<option value="">Selecione um produto</option>';
+                listaProdutos.forEach(prod => {
+                    const option = document.createElement('option');
+                    option.value = prod.idproduto;
+                    option.textContent = `${prod.nomeproduto} - R$ ${parseFloat(prod.precounitario).toFixed(2)}`;
+                    produtoSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar dados auxiliares:', error);
+                mostrarMensagem('Erro ao carregar dados do formulário.', 'error');
+            }
+        }
+
+        async function buscarPedido() {
+            const id = parseInt(searchId.value);
+            if (!id) {
+                mostrarMensagem('Por favor, digite um ID válido.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    preencherFormulario(data);
+                    mostrarMensagem('Pedido encontrado!', 'success');
+                    mostrarBotoesEdicao();
+                } else if (response.status === 404) {
+                    mostrarMensagem('Pedido não encontrado.', 'error');
+                    limparFormulario();
+                } else {
+                    mostrarMensagem('Erro ao buscar pedido.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar pedido:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function incluirPedido() {
+            limparFormulario();
+            habilitarFormulario();
+            modoEdicao = false;
+            pedidoAtual = null;
+            produtosSelecionados = [];
+            mostrarBotaoSalvar();
+            idCliente.focus();
+            mostrarMensagem('Preencha os dados do novo pedido.', 'info');
+        }
+
+        function alterarPedido() {
+            if (!pedidoAtual) {
+                mostrarMensagem('Nenhum pedido selecionado.', 'error');
+                return;
+            }
+            habilitarFormulario();
+            modoEdicao = true;
+            mostrarBotaoSalvar();
+            idCliente.focus();
+            mostrarMensagem('Altere os dados do pedido.', 'info');
+        }
+
+        async function excluirPedido() {
+            if (!pedidoAtual) {
+                mostrarMensagem('Nenhum pedido selecionado.', 'error');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja excluir o pedido #${pedidoAtual.idpedido}?`)) {
+                try {
+                    const response = await fetch(`${API_URL}/${pedidoAtual.idpedido}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok || response.status === 204) {
+                        mostrarMensagem('Pedido excluído com sucesso!', 'success');
+                        carregarTabela();
+                        limparFormulario();
+                    } else {
+                        const data = await response.json();
+                        mostrarMensagem(data.error || 'Erro ao excluir pedido.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir pedido:', error);
+                    mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+                }
+            }
+        }
+
+        async function salvarPedido() {
+            const clienteId = parseInt(idCliente.value);
+            const usuarioId = parseInt(idUsuario.value);
+            
+            if (!clienteId || !usuarioId) {
+                mostrarMensagem('Por favor, selecione cliente e funcionário.', 'error');
+                return;
+            }
+
+            if (produtosSelecionados.length === 0) {
+                mostrarMensagem('Adicione pelo menos um produto ao pedido.', 'error');
+                return;
+            }
+
+            try {
+                const dados = {
+                    idCliente: clienteId,
+                    idUsuario: usuarioId,
+                    produtos: produtosSelecionados
+                };
+
+                let response;
+                if (modoEdicao && pedidoAtual) {
+                    response = await fetch(`${API_URL}/${pedidoAtual.idpedido}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensagem('Pedido alterado com sucesso!', 'success');
+                    }
+                } else {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok || response.status === 201) {
+                        mostrarMensagem('Pedido incluído com sucesso!', 'success');
+                    }
+                }
+
+                if (!response.ok && response.status !== 201) {
+                    const data = await response.json();
+                    mostrarMensagem(data.error || data.message || 'Erro ao salvar pedido.', 'error');
+                    return;
+                }
+
+                carregarTabela();
+                cancelarOperacao();
+            } catch (error) {
+                console.error('Erro ao salvar pedido:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function adicionarProduto() {
+            const produtoId = parseInt(produtoSelect.value);
+            const quantidade = parseInt(quantidadeProduto.value);
+
+            if (!produtoId || !quantidade || quantidade < 1) {
+                mostrarMensagem('Selecione um produto e quantidade válida.', 'error');
+                return;
+            }
+
+            // Verificar se produto já foi adicionado
+            const jaExiste = produtosSelecionados.find(p => p.idProduto === produtoId);
+            if (jaExiste) {
+                mostrarMensagem('Produto já adicionado. Remova-o primeiro para alterar.', 'error');
+                return;
+            }
+
+            const produto = listaProdutos.find(p => p.idproduto === produtoId);
+            if (!produto) return;
+
+            produtosSelecionados.push({
+                idProduto: produtoId,
+                nomeProduto: produto.nomeproduto,
+                precoUnitario: parseFloat(produto.precounitario),
+                quantidade: quantidade
+            });
+
+            atualizarTabelaProdutos();
+            calcularValorTotal();
+            produtoSelect.value = '';
+            quantidadeProduto.value = 1;
+            mostrarMensagem('Produto adicionado!', 'success');
+        }
+
+        function removerProduto(idProduto) {
+            produtosSelecionados = produtosSelecionados.filter(p => p.idProduto !== idProduto);
+            atualizarTabelaProdutos();
+            calcularValorTotal();
+            mostrarMensagem('Produto removido!', 'info');
+        }
+
+        function atualizarTabelaProdutos() {
+            produtosTableBody.innerHTML = '';
+            
+            produtosSelecionados.forEach(prod => {
+                const subtotal = prod.precoUnitario * prod.quantidade;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${prod.nomeProduto}</td>
+                    <td>R$ ${prod.precoUnitario.toFixed(2)}</td>
+                    <td>${prod.quantidade}</td>
+                    <td>R$ ${subtotal.toFixed(2)}</td>
+                    <td><button type="button" onclick="removerProduto(${prod.idProduto})">Remover</button></td>
+                `;
+                produtosTableBody.appendChild(row);
+            });
+        }
+
+        function calcularValorTotal() {
+            const total = produtosSelecionados.reduce((sum, prod) => {
+                return sum + (prod.precoUnitario * prod.quantidade);
+            }, 0);
+            valorTotal.value = `R$ ${total.toFixed(2)}`;
+        }
+
+        function cancelarOperacao() {
+            limparFormulario();
+            desabilitarFormulario();
+            esconderBotoesEdicao();
+            modoEdicao = false;
+            pedidoAtual = null;
+            produtosSelecionados = [];
+            atualizarTabelaProdutos();
+            calcularValorTotal();
+        }
+
+        function preencherFormulario(data) {
+            idCliente.value = data.pedido.idcliente || '';
+            idUsuario.value = data.pedido.idusuario || '';
+            
+            produtosSelecionados = data.produtos.map(p => ({
+                idProduto: p.idproduto,
+                nomeProduto: p.nomeproduto,
+                precoUnitario: parseFloat(p.precounitario),
+                quantidade: p.quantidade
+            }));
+
+            atualizarTabelaProdutos();
+            calcularValorTotal();
+            pedidoAtual = data.pedido;
+        }
+
+        function limparFormulario() {
+            searchId.value = '';
+            idCliente.value = '';
+            idUsuario.value = '';
+            produtoSelect.value = '';
+            quantidadeProduto.value = 1;
+            produtosSelecionados = [];
+            atualizarTabelaProdutos();
+            calcularValorTotal();
+            pedidoAtual = null;
+        }
+
+        function habilitarFormulario() {
+            idCliente.disabled = false;
+            idUsuario.disabled = false;
+            produtoSelect.disabled = false;
+            quantidadeProduto.disabled = false;
+            btnAdicionarProduto.disabled = false;
+        }
+
+        function desabilitarFormulario() {
+            idCliente.disabled = true;
+            idUsuario.disabled = true;
+            produtoSelect.disabled = true;
+            quantidadeProduto.disabled = true;
+            btnAdicionarProduto.disabled = true;
+        }
+
+        function mostrarBotoesEdicao() {
+            btnAlterar.style.display = 'inline-block';
+            btnExcluir.style.display = 'inline-block';
+            btnSalvar.style.display = 'none';
+        }
+
+        function mostrarBotaoSalvar() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'inline-block';
+        }
+
+        function esconderBotoesEdicao() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'none';
+        }
+
+        async function carregarTabela() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar pedidos');
+                }
+
+                const pedidos = await response.json();
+                pedidosTableBody.innerHTML = '';
+                
+                pedidos.forEach(pedido => {
+                    const row = document.createElement('tr');
+                    const data = new Date(pedido.datapedido).toLocaleDateString('pt-BR');
+                    const valor = parseFloat(pedido.valortotal).toFixed(2);
+                    
+                    row.innerHTML = `
+                        <td>${pedido.idpedido}</td>
+                        <td>${pedido.nomecliente || 'N/A'}</td>
+                        <td>${pedido.nomeusuario || 'N/A'}</td>
+                        <td>${data}</td>
+                        <td>R$ ${valor}</td>
+                    `;
+                    
+                    row.addEventListener('click', async function() {
+                        searchId.value = pedido.idpedido;
+                        await buscarPedido();
+                    });
+                    
+                    pedidosTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar tabela:', error);
+                mostrarMensagem('Erro ao carregar lista de pedidos.', 'error');
+            }
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const message = document.createElement('div');
+            message.textContent = texto;
+            message.style.padding = '10px';
+            message.style.marginBottom = '10px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.right = '20px';
+            message.style.zIndex = '1000';
+            message.style.minWidth = '250px';
+            
+            if (tipo === 'success') {
+                message.style.backgroundColor = '#059669';
+            } else if (tipo === 'error') {
+                message.style.backgroundColor = '#dc2626';
+            } else {
+                message.style.backgroundColor = '#3b82f6';
+            }
+            
+            messageContainer.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        }
+
+        function voltarDashboard() {
+            if (confirm('Tem certeza que deseja voltar ao dashboard? Alterações não salvas serão perdidas.')) {
+                window.history.back();
+            }
+        }
+    </script>
+</body>
+</html>

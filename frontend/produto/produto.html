@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Produto - Zênite</title>
+    <link rel="stylesheet" href="/frontend/global.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div>
+            <h1>CRUD Produto</h1>
+        </div>
+        <a href="#" onclick="voltarDashboard()">← Voltar ao Dashboard</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastro de Produto</h2>
+
+            <form id="produtoForm">
+                <div>
+                    <label for="searchId">Buscar por ID:</label>
+                    <div>
+                        <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+                        <button type="button" id="btnBuscar">Buscar</button>
+
+                        <button type="button" id="btnIncluir">Incluir</button>
+                        <button type="button" id="btnAlterar" style="display: none;">Alterar</button>
+                        <button type="button" id="btnExcluir" style="display: none;">Excluir</button>
+                        <button type="button" id="btnSalvar" style="display: none;">Salvar</button>
+                        <button type="button" id="btnCancelar">Cancelar</button>
+                    </div>
+                </div>
+
+                <fieldset id="formFields">
+                    <legend>Dados do Produto</legend>
+
+                    <div>
+                        <label for="nomeProduto">Nome do produto:</label>
+                        <input type="text" id="nomeProduto" name="nomeProduto" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="precoUnitario">Preço unitário:</label>
+                        <input type="number" id="precoUnitario" name="precoUnitario" step="0.01" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="descricao">Descrição:</label>
+                        <input type="text" name="descricao" id="descricao">
+                    </div>
+
+                    <div>
+                        <label for="idCategoria">Categoria:</label>
+                        <select id="idCategoria" name="idCategoria" disabled>
+                            <option value="">Selecione uma categoria</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="imagem">Imagem do produto:</label>
+                        <input type="file" id="imagem" name="imagem" accept="image/*" disabled>
+                        <div id="imagemPreview"></div>
+                    </div>
+                </fieldset>
+            </form>
+        </section>
+
+        <section>
+            <h3>Lista de Produtos</h3>
+            <div>
+                <table id="produtosTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Preço</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Imagem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="produtosTableBody">
+                        <!-- Dados serão carregados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="messageContainer"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/produto';
+        
+        let modoEdicao = false;
+        let produtoAtual = null;
+        let categorias = [];
+
+        // Elementos do DOM
+        const searchId = document.getElementById('searchId');
+        const nomeProduto = document.getElementById('nomeProduto');
+        const precoUnitario = document.getElementById('precoUnitario');
+        const descricao = document.getElementById('descricao');
+        const idCategoria = document.getElementById('idCategoria');
+        const imagem = document.getElementById('imagem');
+        const imagemPreview = document.getElementById('imagemPreview');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnIncluir = document.getElementById('btnIncluir');
+        const btnAlterar = document.getElementById('btnAlterar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const produtosTableBody = document.getElementById('produtosTableBody');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarCategorias();
+            carregarTabela();
+            configurarEventos();
+        });
+
+        function configurarEventos() {
+            btnBuscar.addEventListener('click', buscarProduto);
+            btnIncluir.addEventListener('click', incluirProduto);
+            btnAlterar.addEventListener('click', alterarProduto);
+            btnExcluir.addEventListener('click', excluirProduto);
+            btnSalvar.addEventListener('click', salvarProduto);
+            btnCancelar.addEventListener('click', cancelarOperacao);
+
+            searchId.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarProduto();
+                }
+            });
+
+            imagem.addEventListener('change', previewImagem);
+        }
+
+        async function carregarCategorias() {
+            try {
+                
+                
+                idCategoria.innerHTML = '<option value="">Selecione uma categoria</option>';
+                categorias.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.idcategoria;
+                    option.textContent = cat.nomecategoria;
+                    idCategoria.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar categorias:', error);
+                mostrarMensagem('Erro ao carregar categorias.', 'error');
+            }
+        }
+
+        async function buscarProduto() {
+            const id = parseInt(searchId.value);
+            if (!id) {
+                mostrarMensagem('Por favor, digite um ID válido.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                
+                if (response.ok) {
+                    const produto = await response.json();
+                    preencherFormulario(produto);
+                    mostrarMensagem('Produto encontrado!', 'success');
+                    mostrarBotoesEdicao();
+                    
+                    // Carregar imagem se existir
+                    if (produto.possuiimagem) {
+                        carregarImagemProduto(id);
+                    }
+                } else if (response.status === 404) {
+                    mostrarMensagem('Produto não encontrado.', 'error');
+                    limparFormulario();
+                } else {
+                    mostrarMensagem('Erro ao buscar produto.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar produto:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function incluirProduto() {
+            limparFormulario();
+            habilitarFormulario();
+            modoEdicao = false;
+            produtoAtual = null;
+            mostrarBotaoSalvar();
+            nomeProduto.focus();
+            mostrarMensagem('Preencha os dados do novo produto.', 'info');
+        }
+
+        function alterarProduto() {
+            if (!produtoAtual) {
+                mostrarMensagem('Nenhum produto selecionado.', 'error');
+                return;
+            }
+            habilitarFormulario();
+            modoEdicao = true;
+            mostrarBotaoSalvar();
+            nomeProduto.focus();
+            mostrarMensagem('Altere os dados do produto.', 'info');
+        }
+
+        async function excluirProduto() {
+            if (!produtoAtual) {
+                mostrarMensagem('Nenhum produto selecionado.', 'error');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja excluir o produto "${produtoAtual.nomeproduto}"?`)) {
+                try {
+                    const response = await fetch(`${API_URL}/${produtoAtual.idproduto}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        mostrarMensagem('Produto excluído com sucesso!', 'success');
+                        carregarTabela();
+                        limparFormulario();
+                    } else if (response.status === 400) {
+                        const data = await response.json();
+                        mostrarMensagem(data.error || 'Não é possível excluir este produto.', 'error');
+                    } else {
+                        mostrarMensagem('Erro ao excluir produto.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir produto:', error);
+                    mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+                }
+            }
+        }
+
+        async function salvarProduto() {
+            const nome = nomeProduto.value.trim();
+            const preco = parseFloat(precoUnitario.value);
+            const desc = descricao.value.trim();
+            const catId = idCategoria.value ? parseInt(idCategoria.value) : null;
+            
+            if (!nome || !preco) {
+                mostrarMensagem('Por favor, preencha nome e preço do produto.', 'error');
+                return;
+            }
+
+            if (preco <= 0) {
+                mostrarMensagem('O preço deve ser maior que zero.', 'error');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('nomeProduto', nome);
+                formData.append('precoUnitario', preco);
+                formData.append('descricao', desc);
+                if (catId) formData.append('idCategoria', catId);
+                
+                if (imagem.files.length > 0) {
+                    formData.append('imagem', imagem.files[0]);
+                }
+
+                let response;
+                if (modoEdicao && produtoAtual) {
+                    response = await fetch(`${API_URL}/${produtoAtual.idproduto}`, {
+                        method: 'PUT',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensagem('Produto alterado com sucesso!', 'success');
+                    }
+                } else {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensagem('Produto incluído com sucesso!', 'success');
+                    }
+                }
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    mostrarMensagem(data.error || 'Erro ao salvar produto.', 'error');
+                    return;
+                }
+
+                carregarTabela();
+                cancelarOperacao();
+            } catch (error) {
+                console.error('Erro ao salvar produto:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function cancelarOperacao() {
+            limparFormulario();
+            desabilitarFormulario();
+            esconderBotoesEdicao();
+            modoEdicao = false;
+            produtoAtual = null;
+        }
+
+        function preencherFormulario(produto) {
+            nomeProduto.value = produto.nomeproduto || '';
+            precoUnitario.value = produto.precounitario || '';
+            descricao.value = produto.descricao || '';
+            idCategoria.value = produto.idcategoria || '';
+            produtoAtual = produto;
+        }
+
+        function limparFormulario() {
+            searchId.value = '';
+            nomeProduto.value = '';
+            precoUnitario.value = '';
+            descricao.value = '';
+            idCategoria.value = '';
+            imagem.value = '';
+            imagemPreview.innerHTML = '';
+            produtoAtual = null;
+        }
+
+        function habilitarFormulario() {
+            nomeProduto.disabled = false;
+            precoUnitario.disabled = false;
+            descricao.disabled = false;
+            idCategoria.disabled = false;
+            imagem.disabled = false;
+        }
+
+        function desabilitarFormulario() {
+            nomeProduto.disabled = true;
+            precoUnitario.disabled = true;
+            descricao.disabled = true;
+            idCategoria.disabled = true;
+            imagem.disabled = true;
+        }
+
+        function mostrarBotoesEdicao() {
+            btnAlterar.style.display = 'inline-block';
+            btnExcluir.style.display = 'inline-block';
+            btnSalvar.style.display = 'none';
+        }
+
+        function mostrarBotaoSalvar() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'inline-block';
+        }
+
+        function esconderBotoesEdicao() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'none';
+        }
+
+        function previewImagem(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagemPreview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 200px; max-height: 200px; margin-top: 10px;">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagemPreview.innerHTML = '';
+            }
+        }
+
+        async function carregarImagemProduto(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}/imagem`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    imagemPreview.innerHTML = `<img src="${url}" alt="Imagem do produto" style="max-width: 200px; max-height: 200px; margin-top: 10px;">`;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar imagem:', error);
+            }
+        }
+
+        async function carregarTabela() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar produtos');
+                }
+
+                const produtos = await response.json();
+                produtosTableBody.innerHTML = '';
+                
+                produtos.forEach(produto => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${produto.idproduto}</td>
+                        <td>${produto.nomeproduto}</td>
+                        <td>R$ ${parseFloat(produto.precounitario).toFixed(2)}</td>
+                        <td>${produto.descricao || '-'}</td>
+                        <td>${produto.nomecategoria || '-'}</td>
+                        <td>${produto.possuiimagem ? '✓' : '-'}</td>
+                    `;
+                    
+                    row.addEventListener('click', function() {
+                        searchId.value = produto.idproduto;
+                        preencherFormulario(produto);
+                        mostrarBotoesEdicao();
+                        mostrarMensagem('Produto selecionado da tabela.', 'info');
+                        
+                        if (produto.possuiimagem) {
+                            carregarImagemProduto(produto.idproduto);
+                        }
+                    });
+                    
+                    produtosTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar tabela:', error);
+                mostrarMensagem('Erro ao carregar lista de produtos.', 'error');
+            }
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const message = document.createElement('div');
+            message.textContent = texto;
+            message.style.padding = '10px';
+            message.style.marginBottom = '10px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            
+            if (tipo === 'success') {
+                message.style.backgroundColor = '#059669';
+            } else if (tipo === 'error') {
+                message.style.backgroundColor = '#dc2626';
+            } else {
+                message.style.backgroundColor = '#3b82f6';
+            }
+            
+            messageContainer.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        }
+
+        function voltarDashboard() {
+            if (confirm('Tem certeza que deseja voltar ao dashboard? Alterações não salvas serão perdidas.')) {
+                window.history.back();
+            }
+        }
+    </script>
+</body>
+</html>

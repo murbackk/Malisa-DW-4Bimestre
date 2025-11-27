@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Funcionários - Zênite</title>
+    <link rel="stylesheet" href="/frontend/global.css">
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div>
+            <h1>CRUD Funcionários</h1>
+        </div>
+        <a href="#" onclick="voltarDashboard()">← Voltar ao Dashboard</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastro de Funcionário</h2>
+
+            <form id="funcionarioForm">
+                <div>
+                    <label for="searchId">Buscar por ID:</label>
+                    <div>
+                        <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+                        <button type="button" id="btnBuscar">Buscar</button>
+
+                        <button type="button" id="btnIncluir">Incluir</button>
+                        <button type="button" id="btnAlterar" style="display: none;">Alterar</button>
+                        <button type="button" id="btnExcluir" style="display: none;">Excluir</button>
+                        <button type="button" id="btnSalvar" style="display: none;">Salvar</button>
+                        <button type="button" id="btnCancelar">Cancelar</button>
+                    </div>
+                </div>
+
+                <fieldset id="formFields">
+                    <legend>Dados do Funcionário</legend>
+
+                    <div>
+                        <label for="idFuncionario">ID do Funcionário:</label>
+                        <input type="number" id="idFuncionario" name="idFuncionario" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="nomeFuncionario">Nome do Funcionário:</label>
+                        <input type="text" id="nomeFuncionario" name="nomeFuncionario" required disabled>
+                    </div>
+
+                    <div>
+                        <label for="idCargo">ID do Cargo:</label>
+                        <input type="number" id="idCargo" name="idCargo" disabled>
+                        <small>Deixe vazio se não houver cargo vinculado</small>
+                    </div>
+
+                    <div>
+                        <label for="nomeCargo">Nome do Cargo:</label>
+                        <input type="text" id="nomeCargo" name="nomeCargo" disabled readonly>
+                        <small>(Somente leitura - mostra o cargo vinculado)</small>
+                    </div>
+
+                    <div>
+                        <label for="idUsuario">ID do Usuário:</label>
+                        <input type="number" id="idUsuario" name="idUsuario" required disabled>
+                        <small>Obrigatório - cada funcionário deve ter um usuário vinculado</small>
+                    </div>
+
+                    <div>
+                        <label for="nomeUsuario">Nome do Usuário:</label>
+                        <input type="text" id="nomeUsuario" name="nomeUsuario" disabled readonly>
+                        <small>(Somente leitura - mostra o usuário vinculado)</small>
+                    </div>
+                </fieldset>
+            </form>
+        </section>
+
+        <section>
+            <h3>Lista de Funcionários</h3>
+            <div>
+                <table id="funcionariosTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome do Funcionário</th>
+                            <th>Cargo</th>
+                            <th>Usuário</th>
+                        </tr>
+                    </thead>
+                    <tbody id="funcionariosTableBody">
+                        <!-- Dados serão carregados dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="messageContainer"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/funcionario';
+        
+        let modoEdicao = false;
+        let funcionarioAtual = null;
+
+        // Elementos do DOM
+        const searchId = document.getElementById('searchId');
+        const idFuncionario = document.getElementById('idFuncionario');
+        const nomeFuncionario = document.getElementById('nomeFuncionario');
+        const idCargo = document.getElementById('idCargo');
+        const nomeCargo = document.getElementById('nomeCargo');
+        const idUsuario = document.getElementById('idUsuario');
+        const nomeUsuario = document.getElementById('nomeUsuario');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnIncluir = document.getElementById('btnIncluir');
+        const btnAlterar = document.getElementById('btnAlterar');
+        const btnExcluir = document.getElementById('btnExcluir');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const funcionariosTableBody = document.getElementById('funcionariosTableBody');
+        const messageContainer = document.getElementById('messageContainer');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarTabela();
+            configurarEventos();
+        });
+
+        function configurarEventos() {
+            btnBuscar.addEventListener('click', buscarFuncionario);
+            btnIncluir.addEventListener('click', incluirFuncionario);
+            btnAlterar.addEventListener('click', alterarFuncionario);
+            btnExcluir.addEventListener('click', excluirFuncionario);
+            btnSalvar.addEventListener('click', salvarFuncionario);
+            btnCancelar.addEventListener('click', cancelarOperacao);
+
+            searchId.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    buscarFuncionario();
+                }
+            });
+        }
+
+        async function buscarFuncionario() {
+            const id = parseInt(searchId.value);
+            if (!id) {
+                mostrarMensagem('Por favor, digite um ID válido.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                
+                if (response.ok) {
+                    const funcionario = await response.json();
+                    preencherFormulario(funcionario);
+                    mostrarMensagem('Funcionário encontrado!', 'success');
+                    mostrarBotoesEdicao();
+                } else if (response.status === 404) {
+                    mostrarMensagem('Funcionário não encontrado.', 'error');
+                    limparFormulario();
+                } else {
+                    mostrarMensagem('Erro ao buscar funcionário.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar funcionário:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function incluirFuncionario() {
+            limparFormulario();
+            habilitarFormulario();
+            modoEdicao = false;
+            funcionarioAtual = null;
+            mostrarBotaoSalvar();
+            nomeFuncionario.focus();
+            mostrarMensagem('Preencha os dados do novo funcionário.', 'info');
+        }
+
+        function alterarFuncionario() {
+            if (!funcionarioAtual) {
+                mostrarMensagem('Nenhum funcionário selecionado.', 'error');
+                return;
+            }
+            habilitarFormulario();
+            idFuncionario.disabled = true;
+            modoEdicao = true;
+            mostrarBotaoSalvar();
+            nomeFuncionario.focus();
+            mostrarMensagem('Altere os dados do funcionário.', 'info');
+        }
+
+        async function excluirFuncionario() {
+            if (!funcionarioAtual) {
+                mostrarMensagem('Nenhum funcionário selecionado.', 'error');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja excluir o funcionário "${funcionarioAtual.nomefuncionario}"?`)) {
+                try {
+                    const response = await fetch(`${API_URL}/${funcionarioAtual.idfuncionario}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok || response.status === 204) {
+                        mostrarMensagem('Funcionário excluído com sucesso!', 'success');
+                        carregarTabela();
+                        limparFormulario();
+                    } else {
+                        const data = await response.json();
+                        mostrarMensagem(data.error || 'Erro ao excluir funcionário.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir funcionário:', error);
+                    mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+                }
+            }
+        }
+
+        async function salvarFuncionario() {
+            const nome = nomeFuncionario.value.trim();
+            const cargo = idCargo.value.trim();
+            const usuario = idUsuario.value.trim();
+            
+            if (!nome || !usuario) {
+                mostrarMensagem('Por favor, preencha o nome e o ID do usuário.', 'error');
+                return;
+            }
+
+            try {
+                const dados = {
+                    nomefuncionario: nome,
+                    idcargo: cargos ? parseInt(cargos) : null,
+                    idusuario: parseInt(usuario)
+                };
+
+                let response;
+                if (modoEdicao && funcionarioAtual) {
+                    response = await fetch(`${API_URL}/${funcionarioAtual.idfuncionario}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok) {
+                        mostrarMensagem('Funcionário alterado com sucesso!', 'success');
+                    }
+                } else {
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dados)
+                    });
+                    
+                    if (response.ok || response.status === 201) {
+                        mostrarMensagem('Funcionário incluído com sucesso!', 'success');
+                    }
+                }
+
+                if (!response.ok && response.status !== 201) {
+                    const data = await response.json();
+                    mostrarMensagem(data.error || 'Erro ao salvar funcionário.', 'error');
+                    return;
+                }
+
+                carregarTabela();
+                cancelarOperacao();
+            } catch (error) {
+                console.error('Erro ao salvar funcionário:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        function cancelarOperacao() {
+            limparFormulario();
+            desabilitarFormulario();
+            esconderBotoesEdicao();
+            modoEdicao = false;
+            funcionarioAtual = null;
+        }
+
+        function preencherFormulario(funcionario) {
+            idFuncionario.value = funcionario.idfuncionario || '';
+            nomeFuncionario.value = funcionario.nomefuncionario || '';
+            idCargo.value = funcionario.idcargo || '';
+            nomeCargo.value = funcionario.nomecargo || '';
+            idUsuario.value = funcionario.idusuario || '';
+            nomeUsuario.value = funcionario.nomeusuario || '';
+            funcionarioAtual = funcionario;
+        }
+
+        function limparFormulario() {
+            searchId.value = '';
+            idFuncionario.value = '';
+            nomeFuncionario.value = '';
+            idCargo.value = '';
+            nomeCargo.value = '';
+            idUsuario.value = '';
+            nomeUsuario.value = '';
+            funcionarioAtual = null;
+        }
+
+        function habilitarFormulario() {
+            nomeFuncionario.disabled = false;
+            idCargo.disabled = false;
+            idUsuario.disabled = false;
+        }
+
+        function desabilitarFormulario() {
+            idFuncionario.disabled = true;
+            nomeFuncionario.disabled = true;
+            idCargo.disabled = true;
+            nomeCargo.disabled = true;
+            idUsuario.disabled = true;
+            nomeUsuario.disabled = true;
+        }
+
+        function mostrarBotoesEdicao() {
+            btnAlterar.style.display = 'inline-block';
+            btnExcluir.style.display = 'inline-block';
+            btnSalvar.style.display = 'none';
+        }
+
+        function mostrarBotaoSalvar() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'inline-block';
+        }
+
+        function esconderBotoesEdicao() {
+            btnAlterar.style.display = 'none';
+            btnExcluir.style.display = 'none';
+            btnSalvar.style.display = 'none';
+        }
+
+        async function carregarTabela() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar funcionários');
+                }
+
+                const funcionarios = await response.json();
+                funcionariosTableBody.innerHTML = '';
+                
+                funcionarios.forEach(func => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${func.idfuncionario}</td>
+                        <td>${func.nomefuncionario}</td>
+                        <td>${func.nomecargo || 'Sem cargo'}</td>
+                        <td>${func.nomeusuario || 'Sem usuário'}</td>
+                    `;
+                    
+                    row.addEventListener('click', async function() {
+                        searchId.value = func.idfuncionario;
+                        try {
+                            const response = await fetch(`${API_URL}/${func.idfuncionario}`);
+                            if (response.ok) {
+                                const funcionario = await response.json();
+                                preencherFormulario(funcionario);
+                                mostrarBotoesEdicao();
+                                mostrarMensagem('Funcionário selecionado da tabela.', 'info');
+                            }
+                        } catch (error) {
+                            console.error('Erro ao buscar detalhes:', error);
+                        }
+                    });
+                    
+                    funcionariosTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar tabela:', error);
+                mostrarMensagem('Erro ao carregar lista de funcionários.', 'error');
+            }
+        }
+
+        function mostrarMensagem(texto, tipo) {
+            const message = document.createElement('div');
+            message.textContent = texto;
+            message.style.padding = '10px';
+            message.style.marginBottom = '10px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.right = '20px';
+            message.style.zIndex = '1000';
+            message.style.minWidth = '250px';
+            
+            if (tipo === 'success') {
+                message.style.backgroundColor = '#059669';
+            } else if (tipo === 'error') {
+                message.style.backgroundColor = '#dc2626';
+            } else {
+                message.style.backgroundColor = '#3b82f6';
+            }
+            
+            messageContainer.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        }
+
+        function voltarDashboard() {
+            if (confirm('Tem certeza que deseja voltar ao dashboard? Alterações não salvas serão perdidas.')) {
+                window.history.back();
+            }
+        }
+    </script>
+</body>
+</html>

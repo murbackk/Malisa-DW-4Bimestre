@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento - Zênite Store</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Finalizar Pagamento</h1>
+        </div>
+        <a href="../../index.html">← Voltar para a loja</a>
+    </header>
+
+    <main>
+        <div id="user-welcome">
+            <p>Bem-vindo(a), <span id="welcome-user-name"></span>!</p>
+            <p>Pedido #<span id="pedido-id"></span></p>
+        </div>
+
+        <section>
+            <h2>Valor Total: R$ <span id="valor-total">0.00</span></h2>
+        </section>
+
+        <section id="selecao-pagamento">
+            <h3>Selecione a Forma de Pagamento:</h3>
+            <div id="formas-pagamento-container">
+                <!-- Formas de pagamento carregadas dinamicamente -->
+            </div>
+        </section>
+
+        <section id="pix-section" style="display: none;">
+            <h3>Pagamento via PIX</h3>
+            <div id="qrcode" style="text-align: center; margin: 20px 0;"></div>
+            <p style="text-align: center;">Escaneie o QR Code acima com seu aplicativo de banco</p>
+            <button onclick="confirmarPagamento()">Pagamento Realizado</button>
+        </section>
+
+        <section id="cartao-section" style="display: none;">
+            <h3>Pagamento com Cartão</h3>
+            <form id="form-cartao">
+                <div>
+                    <label for="nome-cartao">Nome Completo (como está no cartão):</label>
+                    <input type="text" id="nome-cartao" placeholder="Digite seu nome completo" required>
+                </div>
+
+                <div>
+                    <label for="numero-cartao">Número do Cartão:</label>
+                    <input type="text" id="numero-cartao" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                </div>
+
+                <div>
+                    <label for="validade-cartao">Validade:</label>
+                    <input type="text" id="validade-cartao" placeholder="MM/AA" maxlength="5" required>
+                </div>
+
+                <div>
+                    <label for="cvv-cartao">CVV:</label>
+                    <input type="text" id="cvv-cartao" placeholder="123" maxlength="3" required>
+                </div>
+
+                <button type="button" onclick="validarCartao()">Validar Cartão</button>
+                <p id="cartao-status"></p>
+            </form>
+
+            <button id="btn-confirmar-cartao" style="display: none;" onclick="confirmarPagamento()">
+                Confirmar Pagamento
+            </button>
+        </section>
+    </main>
+
+    <div id="messageContainer"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3001';
+        let pedidoId = null;
+        let valorTotal = 0;
+        let formaPagamentoSelecionada = null;
+        let usuarioLogado = null;
+
+        // Verificar autenticação
+        function verificarAutenticacao() {
+            const user = localStorage.getItem('usuarioLogado');
+            pedidoId = localStorage.getItem('pedidoId');
+
+            if (!user || !pedidoId) {
+                alert('Você precisa fazer login e ter um pedido para acessar esta página!');
+                window.location.href = '../../index.html';
+                return false;
+            }
+
+            usuarioLogado = JSON.parse(user);
+            document.getElementById('welcome-user-name').textContent = usuarioLogado.nomeUsuario;
+            document.getElementById('pedido-id').textContent = pedidoId;
+            return true;
+        }
+
+        // Carregar dados do pedido
+        async function carregarPedido() {
+            try {
+                const response = await fetch(`${API_URL}/pedidos/${pedidoId}`);
+                
+                if (response.ok) {
+                    const pedido = await response.json();
+                    valorTotal = parseFloat(pedido.valortotal);
+                    document.getElementById('valor-total').textContent = valorTotal.toFixed(2);
+                } else {
+                    mostrarMensagem('Erro ao carregar dados do pedido.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar pedido:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        // Carregar formas de pagamento
+        async function carregarFormasPagamento() {
+            try {
+                const response = await fetch(`${API_URL}/formadepagamento`);
+                
+                if (response.ok) {
+                    const formas = await response.json();
+                    renderizarFormasPagamento(formas);
+                } else {
+                    mostrarMensagem('Erro ao carregar formas de pagamento.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar formas de pagamento:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        // Renderizar formas de pagamento
+        function renderizarFormasPagamento(formas) {
+            const container = document.getElementById('formas-pagamento-container');
+            
+            if (formas.length === 0) {
+                container.innerHTML = '<p>Nenhuma forma de pagamento disponível no momento.</p>';
+                return;
+            }
+
+            formas.forEach(forma => {
+                const btn = document.createElement('button');
+                btn.textContent = forma.nomeformadepagamento;
+                btn.style.margin = '10px';
+                btn.style.padding = '15px 30px';
+                btn.style.fontSize = '16px';
+                btn.style.cursor = 'pointer';
+                btn.style.borderRadius = '5px';
+                btn.style.border = '2px solid #3b82f6';
+                btn.style.backgroundColor = 'white';
+                btn.style.color = '#3b82f6';
+                
+                btn.onclick = () => selecionarFormaPagamento(forma);
+                container.appendChild(btn);
+            });
+        }
+
+        // Selecionar forma de pagamento
+        function selecionarFormaPagamento(forma) {
+            formaPagamentoSelecionada = forma;
+            
+            // Esconder seleção
+            document.getElementById('selecao-pagamento').style.display = 'none';
+            
+            // Mostrar seção apropriada
+            const nomeLower = forma.nomeformadepagamento.toLowerCase();
+            
+            if (nomeLower.includes('pix')) {
+                mostrarPix();
+            } else if (nomeLower.includes('cartão') || nomeLower.includes('cartao')) {
+                mostrarCartao();
+            } else {
+                // Forma de pagamento genérica
+                if (confirm(`Confirmar pagamento via ${forma.nomeformadepagamento}?`)) {
+                    confirmarPagamento();
+                }
+            }
+        }
+
+        // Mostrar seção PIX
+        function mostrarPix() {
+            document.getElementById('pix-section').style.display = 'block';
+            gerarQRCodePix();
+        }
+
+        // Mostrar seção Cartão
+        function mostrarCartao() {
+            document.getElementById('cartao-section').style.display = 'block';
+            
+            // Formatar número do cartão
+            const numeroCartao = document.getElementById('numero-cartao');
+            numeroCartao.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                e.target.value = value;
+            });
+
+            // Formatar validade
+            const validadeCartao = document.getElementById('validade-cartao');
+            validadeCartao.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Gerar QR Code PIX
+        function gerarQRCodePix() {
+            const chavePix = "pagamento@zenite.com";
+            const nomeRecebedor = "ZENITE STORE";
+            const cidade = "CAMPO MOURAO";
+
+            const payload = gerarPayloadPix(chavePix, valorTotal.toString(), nomeRecebedor, cidade);
+
+            const qrDiv = document.getElementById("qrcode");
+            qrDiv.innerHTML = "";
+            new QRCode(qrDiv, {
+                text: payload,
+                width: 300,
+                height: 300
+            });
+        }
+
+        // Gerar Payload PIX
+        function gerarPayloadPix(chave, valor, nome, cidade) {
+            const formatarValor = parseFloat(valor).toFixed(2);
+
+            const chavePixField = '0014br.gov.bcb.pix' + '01' + chave.length.toString().padStart(2, '0') + chave;
+            const chavePixLength = chavePixField.length.toString().padStart(2, '0');
+
+            const payload = [
+                '000201',
+                '26' + chavePixLength + chavePixField,
+                '52040000',
+                '5303986',
+                '54' + formatarValor.length.toString().padStart(2, '0') + formatarValor,
+                '5802BR',
+                '59' + nome.length.toString().padStart(2, '0') + nome,
+                '60' + cidade.length.toString().padStart(2, '0') + cidade,
+                '62070503***'
+            ];
+
+            let payloadStr = payload.join('');
+            const crc = crc16(payloadStr + '6304');
+            payloadStr += '6304' + crc;
+
+            return payloadStr;
+        }
+
+        // CRC16 para PIX
+        function crc16(str) {
+            let crc = 0xFFFF;
+            for (let i = 0; i < str.length; i++) {
+                crc ^= str.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((crc & 0x8000) !== 0) {
+                        crc = (crc << 1) ^ 0x1021;
+                    } else {
+                        crc <<= 1;
+                    }
+                }
+            }
+            return ((crc ^ 0x0000) & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        // Validar Cartão (Algoritmo de Luhn)
+        function validarCartao() {
+            const nomeCartao = document.getElementById('nome-cartao').value.trim();
+            const numeroCartao = document.getElementById('numero-cartao').value.replace(/\D/g, '');
+            const validade = document.getElementById('validade-cartao').value;
+            const cvv = document.getElementById('cvv-cartao').value;
+
+            if (!nomeCartao || !numeroCartao || !validade || !cvv) {
+                mostrarMensagem('Por favor, preencha todos os campos do cartão.', 'error');
+                return;
+            }
+
+            if (cvv.length !== 3) {
+                mostrarMensagem('CVV deve ter 3 dígitos.', 'error');
+                return;
+            }
+
+            // Algoritmo de Luhn
+            let soma = 0;
+            let alternar = false;
+
+            for (let i = numeroCartao.length - 1; i >= 0; i--) {
+                let n = parseInt(numeroCartao.charAt(i));
+                if (alternar) {
+                    n *= 2;
+                    if (n > 9) n -= 9;
+                }
+                soma += n;
+                alternar = !alternar;
+            }
+
+            const valido = soma % 10 === 0 && numeroCartao.length >= 13;
+            const status = document.getElementById('cartao-status');
+            
+            if (valido) {
+                status.textContent = "Cartão válido ✅";
+                status.style.color = "green";
+                document.getElementById('btn-confirmar-cartao').style.display = 'block';
+            } else {
+                status.textContent = "Cartão inválido ❌";
+                status.style.color = "red";
+                document.getElementById('btn-confirmar-cartao').style.display = 'none';
+            }
+        }
+
+        // Confirmar pagamento
+        async function confirmarPagamento() {
+            if (!formaPagamentoSelecionada) {
+                mostrarMensagem('Selecione uma forma de pagamento.', 'error');
+                return;
+            }
+
+            try {
+                const dadosPagamento = {
+                    idPedido: parseInt(pedidoId),
+                    valorPago: valorTotal,
+                    idFormaPagamento: formaPagamentoSelecionada.idformapagamento
+                };
+
+                const response = await fetch(`${API_URL}/pagamento`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dadosPagamento)
+                });
+
+                if (response.ok || response.status === 201) {
+                    // Limpar pedido do localStorage
+                    localStorage.removeItem('pedidoId');
+                    
+                    // Mostrar mensagem de sucesso
+                    alert('🎉 PEDIDO REALIZADO COM SUCESSO!\n\nObrigado pela sua compra!');
+                    
+                    // Redirecionar para index
+                    window.location.href = '../../index.html';
+                } else {
+                    const data = await response.json();
+                    mostrarMensagem(data.error || 'Erro ao processar pagamento.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao confirmar pagamento:', error);
+                mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+            }
+        }
+
+        // Mostrar mensagem
+        function mostrarMensagem(texto, tipo) {
+            const container = document.getElementById('messageContainer');
+            const message = document.createElement('div');
+            message.textContent = texto;
+            message.style.padding = '10px';
+            message.style.marginBottom = '10px';
+            message.style.borderRadius = '5px';
+            message.style.color = 'white';
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.right = '20px';
+            message.style.zIndex = '1000';
+            message.style.minWidth = '250px';
+            
+            if (tipo === 'success') {
+                message.style.backgroundColor = '#059669';
+            } else if (tipo === 'error') {
+                message.style.backgroundColor = '#dc2626';
+            } else {
+                message.style.backgroundColor = '#3b82f6';
+            }
+            
+            container.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 4000);
+        }
+
+        // Inicialização
+        window.onload = function() {
+            if (verificarAutenticacao()) {
+                carregarPedido();
+                carregarFormasPagamento();
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+/* ==========================================================================
+   Variáveis de Cor e Configurações Globais (Réplica Fiel do Template)
+   ========================================================================== */
+
+:root {
+    /* Cores do Template de Login */
+    --color-background: #1A053A; /* Roxo bem escuro do fundo */
+    --color-container-bg: #210B45; /* Roxo um pouco mais claro do container principal */
+    --color-form-bg: #1A053A; /* A coluna do formulário tem a mesma cor do fundo */
+    --color-text-light: #FFFFFF;
+    --color-text-faded: rgba(255, 255, 255, 0.6);
+    --color-input-border: rgba(255, 255, 255, 0.2);
+    --color-accent-pink: #E83E8C; /* Rosa vibrante do botão */
+    --color-accent-blue: #00BFFF; /* Azul do gradiente */
+
+    /* Tipografia */
+    --font-family-main: 'Inter', sans-serif; /* Usando Inter para tudo, como no template */
+    --font-size-base: 14px; /* O template usa uma fonte base menor */
+
+    /* Espaçamento */
+    --spacing-small: 8px;
+    --spacing-medium: 16px;
+    --spacing-large: 24px;
+    --spacing-xlarge: 48px;
+
+    /* Sombras */
+    --shadow-main: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Estilos Globais e Estrutura
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-main);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--color-text-light);
+    background-color: #12002B; /* Cor de fundo externa ao container */
+    background-image: linear-gradient(180deg, #12002B 0%, #2E006E 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container principal que imita a janela do template */
+#login-page-container {
+    width: 100%;
+    max-width: 1100px;
+    height: 700px;
+    background-color: var(--color-container-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow-main);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Cabeçalho (Header)
+   ========================================================================== */
+
+.login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-medium) var(--spacing-large);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text-light);
+}
+
+.header-logo img {
+    height: 24px;
+}
+
+.header-nav {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.header-nav a {
+    color: var(--color-text-faded);
+    text-decoration: none;
+    margin: 0 var(--spacing-medium);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.header-nav a:hover {
+    color: var(--color-text-light);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-medium);
+}
+
+.btn-signin {
+    background-color: var(--color-accent-blue);
+    color: var(--color-text-light);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-transform: uppercase;
+}
+
+.btn-signin:hover {
+    background-color: #00A8E0;
+}
+
+.menu-icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-faded);
+}
+
+/* ==========================================================================
+   Conteúdo Principal (Duas Colunas)
+   ========================================================================== */
+
+.main-content {
+    display: flex;
+    flex-grow: 1;
+}
+
+/* Coluna de Formulário (Esquerda) */
+.form-column {
+    width: 40%;
+    max-width: 440px;
+    padding: var(--spacing-xlarge);
+    background-color: var(--color-form-bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#login-container, #cadastro-container {
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+}
+
+.form-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--color-input-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: var(--spacing-large);
+    color: var(--color-accent-blue);
+}
+
+.form-icon svg {
+    height: 30px;
+    width: 30px;
+    stroke: var(--color-accent-blue);
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: var(--spacing-medium);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 20px 14px 45px; /* Espaço para o ícone */
+    background-color: transparent;
+    border: 1px solid var(--color-input-border);
+    border-radius: 8px;
+    color: var(--color-text-light);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+.input-group input::placeholder {
+    color: var(--color-text-faded);
+    text-transform: uppercase;
+}
+
+.input-group input:focus {
+    border-color: var(--color-accent-pink);
+    background-color: rgba(0,0,0,0.1);
+}
+
+.input-group svg {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    stroke: var(--color-text-faded);
+}
+
+#btnLogin, #btnSalvarCadastro {
+    width: 100%;
+    padding: 14px;
+    margin-top: var(--spacing-small);
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.3s;
+    background-color: var(--color-accent-pink);
+    color: var(--color-text-light);
+    font-size: 1rem;
+}
+
+#btnLogin:hover, #btnSalvarCadastro:hover {
+    opacity: 0.9;
+}
+
+.form-links {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: var(--spacing-medium);
+    font-size: 0.85rem;
+}
+
+.form-links a, .form-links label {
+    color: var(--color-text-faded);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.form-links a:hover, .form-links label:hover {
+    color: var(--color-text-light);
+}
+
+/* Coluna de Boas-Vindas (Direita) */
+.welcome-column {
+    width: 60%;
+    padding: var(--spacing-xlarge);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.welcome-column::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, 
+        rgba(30, 136, 229, 0.6) 0%, /* Azul */
+        rgba(232, 62, 140, 0.6) 100% /* Rosa */
+    );
+    filter: blur(150px);
+    opacity: 0.7;
+    z-index: 0;
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-title {
+    font-family: var(--font-family-main);
+    font-size: 4rem;
+    font-weight: 800;
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-small);
+}
+
+.welcome-text-small {
+    font-size: 1rem;
+    color: var(--color-text-faded);
+    max-width: 350px;
+    margin: 0 auto var(--spacing-large);
+}
+
+.signup-link {
+    color: var(--color-text-faded);
+    font-size: 0.9rem;
+}
+
+.signup-link a {
+    color: var(--color-text-light);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+/* Escondendo elementos do HTML original que não estão no template */
+h2, #btnCadastrar, #btnVoltarLogin {
+    display: none;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+    .welcome-column {
+        display: none; /* Esconde a coluna da direita em telas menores */
+    }
+    .form-column {
+        width: 100%;
+        max-width: 100%;
+        border-right: none;
+    }
+    #login-page-container {
+        height: auto;
+        max-height: 100vh;
+    }
+    .login-header {
+        justify-content: space-between;
+    }
+    .header-nav {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 0;
+    }
+    #login-page-container {
+        border-radius: 0;
+        height: 100vh;
+    }
+}

@@ -1,0 +1,354 @@
+/* ==========================================================================
+   Variáveis de Cor e Configurações Globais (Baseado na Homepage)
+   ========================================================================== */
+
+:root {
+    /* Cores Temáticas - Inspiradas em Atlética Universitária */
+    --color-primary-purple: #5E35B1; /* Roxo Principal */
+    --color-secondary-blue: #1E88E5; /* Azul Secundário */
+    --color-accent-pink: #FF4081; /* Rosa de Destaque */
+    --color-accent-lime: #CDDC39; /* Verde Lima Vibrante */
+    --color-accent-orange: #FF9800; /* Laranja de Alerta/Destaque */
+    
+    /* Cores Neutras */
+    --color-white: #FFFFFF;
+    --color-light-gray: #F5F5F5;
+    --color-dark-gray: #333333;
+    --color-text: #212121;
+    --color-background-content: rgba(255, 255, 255, 0.95); /* Fundo semi-transparente para o conteúdo */
+    
+    /* Tipografia */
+    --font-family-main: 'Inter', sans-serif;
+    --font-size-base: 16px;
+    
+    /* Espaçamento */
+    --spacing-small: 8px;
+    --spacing-medium: 16px;
+    --spacing-large: 24px;
+    --spacing-xlarge: 32px;
+    
+    /* Sombras */
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Estilos Globais e Background (Gradient Blur)
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-main);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--color-text);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    background-color: var(--color-light-gray);
+}
+
+/* Efeito de Background "Gradient Blur" - Replicando o template */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    
+    /* Gradiente centralizado e borrado */
+    background: radial-gradient(circle at 50% 50%, 
+        rgba(128, 160, 255, 0.5) 0%, /* Azul claro */
+        rgba(160, 128, 255, 0.5) 30%, /* Roxo claro */
+        rgba(255, 128, 160, 0.5) 60%, /* Rosa claro */
+        transparent 80%
+    );
+    
+    filter: blur(100px); /* Blur mais suave */
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   Container Principal e Header
+   ========================================================================== */
+
+header {
+    background-color: var(--color-background-content);
+    box-shadow: var(--shadow-light);
+    padding: var(--spacing-medium) var(--spacing-large);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    font-size: 1.5rem;
+    color: var(--color-primary-purple);
+}
+
+header a {
+    color: var(--color-secondary-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+header a:hover {
+    color: var(--color-accent-pink);
+}
+
+main {
+    width: 90%;
+    max-width: 1200px;
+    margin: var(--spacing-xlarge) auto;
+    padding: var(--spacing-xlarge);
+    background-color: var(--color-background-content);
+    border-radius: 8px;
+    box-shadow: var(--shadow-medium);
+}
+
+/* ==========================================================================
+   Títulos e Mensagens
+   ========================================================================== */
+
+h2 {
+    font-size: 1.8rem;
+    color: var(--color-primary-purple);
+    margin-bottom: var(--spacing-medium);
+    border-bottom: 2px solid var(--color-light-gray);
+    padding-bottom: var(--spacing-small);
+}
+
+h3 {
+    font-size: 1.4rem;
+    color: var(--color-dark-gray);
+    margin-top: var(--spacing-large);
+    margin-bottom: var(--spacing-medium);
+}
+
+#messageContainer {
+    position: fixed;
+    top: 80px;
+    right: var(--spacing-large);
+    z-index: 1001;
+    width: 300px;
+}
+
+.message {
+    padding: var(--spacing-medium);
+    margin-bottom: var(--spacing-small);
+    border-radius: 4px;
+    font-weight: bold;
+    box-shadow: var(--shadow-medium);
+}
+
+.message.success {
+    background-color: var(--color-accent-lime);
+    color: var(--color-dark-gray);
+}
+
+.message.error {
+    background-color: var(--color-accent-orange);
+    color: var(--color-white);
+}
+
+.message.info {
+    background-color: var(--color-secondary-blue);
+    color: var(--color-white);
+}
+
+/* ==========================================================================
+   Formulário (Inputs e Fieldset)
+   ========================================================================== */
+
+#cargoForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    margin-bottom: var(--spacing-xlarge);
+}
+
+#cargoForm > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-medium);
+    align-items: center;
+}
+
+#cargoForm label {
+    font-weight: 600;
+    color: var(--color-dark-gray);
+    min-width: 120px;
+}
+
+#cargoForm input[type="text"], #cargoForm input[type="number"] {
+    padding: var(--spacing-small);
+    border: 1px solid var(--color-light-gray);
+    border-radius: 4px;
+    flex-grow: 1;
+    max-width: 300px;
+    transition: border-color 0.3s;
+}
+
+#cargoForm input:focus {
+    border-color: var(--color-primary-purple);
+    outline: none;
+}
+
+fieldset {
+    border: 1px solid var(--color-light-gray);
+    border-radius: 4px;
+    padding: var(--spacing-medium);
+    margin-top: var(--spacing-medium);
+}
+
+legend {
+    font-weight: 700;
+    color: var(--color-primary-purple);
+    padding: 0 var(--spacing-small);
+}
+
+/* ==========================================================================
+   Botões
+   ========================================================================== */
+
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-light);
+}
+
+/* Botões de Ação Principal (Salvar, Incluir) */
+#btnSalvar, #btnIncluir {
+    background-color: var(--color-primary-purple);
+    color: var(--color-white);
+}
+
+#btnSalvar:hover, #btnIncluir:hover {
+    background-color: #7E57C2;
+    transform: translateY(-1px);
+}
+
+/* Botões Secundários (Buscar, Alterar) */
+#btnBuscar, #btnAlterar {
+    background-color: var(--color-secondary-blue);
+    color: var(--color-white);
+}
+
+#btnBuscar:hover, #btnAlterar:hover {
+    background-color: #42A5F5;
+    transform: translateY(-1px);
+}
+
+/* Botões de Perigo (Excluir) */
+#btnExcluir {
+    background-color: var(--color-accent-pink);
+    color: var(--color-white);
+}
+
+#btnExcluir:hover {
+    background-color: #FF80AB;
+    transform: translateY(-1px);
+}
+
+/* Botão de Cancelar */
+#btnCancelar {
+    background-color: var(--color-dark-gray);
+    color: var(--color-white);
+}
+
+#btnCancelar:hover {
+    background-color: #555555;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Tabela
+   ========================================================================== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-medium);
+    box-shadow: var(--shadow-light);
+    background-color: var(--color-white);
+}
+
+th, td {
+    padding: var(--spacing-small) var(--spacing-medium);
+    text-align: left;
+    border-bottom: 1px solid var(--color-light-gray);
+}
+
+th {
+    background-color: var(--color-primary-purple);
+    color: var(--color-white);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+tr:nth-child(even) {
+    background-color: #F9F9F9;
+}
+
+tr:hover {
+    background-color: #EFEFEF;
+    cursor: pointer;
+}
+
+/* Responsividade da Tabela */
+@media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+    
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    tr {
+        border: 1px solid var(--color-light-gray);
+        margin-bottom: var(--spacing-medium);
+        border-radius: 4px;
+    }
+    
+    td {
+        border: none;
+        border-bottom: 1px solid #EEEEEE;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+    }
+    
+    td:before {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        content: attr(data-label); /* Usar data-label para cabeçalhos */
+        font-weight: bold;
+        text-align: left;
+        color: var(--color-primary-purple);
+    }
+}

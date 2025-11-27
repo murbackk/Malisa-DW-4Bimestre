@@ -1,0 +1,561 @@
+:root {
+    /* Cores Temáticas - Adaptadas ao novo template */
+    --color-primary-purple: #5E35B1; /* Roxo Zenite */
+    --color-secondary-blue: #1E88E5; /* Azul Secundário */
+    --color-accent-pink: #FF4081; /* Rosa de Destaque */
+    --color-accent-lime: #CDDC39; /* Verde Lima */
+    --color-accent-orange: #FF9800; /* Laranja */
+    
+    /* Cores do Template */
+    --color-template-blue: #80A0FF; /* Azul claro do gradiente */
+    --color-template-purple: #A080FF; /* Roxo claro do gradiente */
+    --color-template-pink: #FF80A0; /* Rosa claro do gradiente */
+    --color-template-text: #5E35B1; /* Cor do texto do menu (Roxo Zenite) */
+    --color-template-hands: #FF6347; /* Cor das mãos (Laranja/Coral) */
+    
+    /* Cores Neutras */
+    --color-white: #FFFFFF;
+    --color-light-gray: #F0F0F5; /* Fundo muito claro */
+    --color-dark-gray: #212121;
+    --color-text: #333333;
+    
+    /* Tipografia */
+    --font-family-serif: 'Playfair Display', serif;
+    --font-family-sans: 'Inter', sans-serif;
+    --font-size-base: 16px;
+    
+    /* Espaçamento */
+    --spacing-small: 8px;
+    --spacing-medium: 16px;
+    --spacing-large: 24px;
+    --spacing-xlarge: 32px;
+    
+    /* Sombras */
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================================================================
+   Reset Básico e Estilos Globais
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    color: var(--color-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+    background-color: var(--color-light-gray); /* Cor de fundo base */
+}
+
+/* Efeito de Background "Gradient Blur" - Replicando o template */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    
+    /* Gradiente centralizado e borrado */
+    background: radial-gradient(circle at 50% 50%, 
+        rgba(128, 160, 255, 0.5) 0%, /* Azul claro */
+        rgba(160, 128, 255, 0.5) 30%, /* Roxo claro */
+        rgba(255, 128, 160, 0.5) 60%, /* Rosa claro */
+        transparent 80%
+    );
+    
+    filter: blur(100px); /* Blur mais suave */
+    opacity: 0.8;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-large) 0;
+    flex-grow: 1;
+    /* O container não terá fundo branco para deixar o gradiente aparecer */
+    background-color: transparent; 
+    box-shadow: none;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+/* ==========================================================================
+   Header (Cabeçalho) - Minimalista do Template
+   ========================================================================== */
+
+.header {
+    background-color: transparent; /* Fundo transparente */
+    box-shadow: none;
+    padding: var(--spacing-medium) var(--spacing-xlarge);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--color-template-text);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    /* Replicando o ícone de trevo com um emoji para simplicidade */
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text-light);
+}
+
+.header-logo img {
+    height: 40px;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-large);
+}
+
+#welcomeSection {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
+.welcome-text {
+    color: var(--color-template-text);
+    font-size: 0.9rem;
+}
+
+#userName {
+    font-weight: bold;
+    color: var(--color-template-text);
+}
+
+/* Botão do Carrinho - Estilo adaptado ao template */
+.cart-btn {
+    background-color: transparent;
+    color: var(--color-template-text);
+    border: 1px solid var(--color-template-text);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+    position: relative;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+
+.cart-btn:hover {
+    background-color: rgba(94, 53, 177, 0.1); /* Roxo Zenite com transparência */
+    transform: none;
+    box-shadow: none;
+}
+
+.cart-count {
+    background-color: var(--color-accent-pink);
+    color: var(--color-white);
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Botões - Estilo adaptado ao template */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px; /* Botões arredondados */
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background-color: var(--color-white);
+    color: var(--color-primary-purple);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-light-gray);
+}
+
+/* ==========================================================================
+   Hero Section (Nova seção de destaque)
+   ========================================================================== */
+
+.hero-section {
+    text-align: center;
+    padding: 100px 0;
+    margin-top: 50px;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-subtitle {
+    font-family: var(--font-family-sans);
+    font-size: 1.1rem;
+    color: var(--color-template-text);
+    margin-bottom: var(--spacing-medium);
+}
+
+.hero-title {
+    font-family: var(--font-family-serif);
+    font-size: 4rem;
+    font-weight: 400;
+    color: var(--color-template-text);
+    margin-bottom: var(--spacing-medium);
+    line-height: 1.1;
+}
+
+.hero-description {
+    font-family: var(--font-family-sans);
+    font-size: 1rem;
+    color: var(--color-text);
+    max-width: 500px;
+    margin: 0 auto var(--spacing-xlarge);
+}
+
+.hero-btn {
+    /* Estilo do botão "FAZER LOGIN" do template */
+    background: linear-gradient(to right, var(--color-template-blue), var(--color-template-purple));
+    color: var(--color-white);
+    padding: 12px 30px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hero-btn:hover {
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   Produtos (Grid e Cards) - Adaptados ao novo template
+   ========================================================================== */
+
+.produtos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-large);
+    padding: var(--spacing-xlarge) 0;
+    /* Adiciona um fundo para a seção de produtos para garantir legibilidade */
+    background-color: var(--color-white);
+    padding: var(--spacing-xlarge);
+    border-radius: 8px;
+    box-shadow: var(--shadow-medium);
+    margin-top: var(--spacing-xlarge);
+}
+
+.produto-card {
+    background-color: var(--color-white);
+    border-radius: 8px;
+    box-shadow: var(--shadow-light);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--color-light-gray);
+}
+
+.produto-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.produto-imagem {
+    width: 100%;
+    height: 200px;
+    background-color: var(--color-light-gray);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    color: var(--color-dark-gray);
+    overflow: hidden;
+}
+
+.produto-card h3.produto-nome {
+    font-family: var(--font-family-sans);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary-purple);
+    padding: var(--spacing-medium) var(--spacing-medium) 0;
+    margin: 0;
+    text-align: center;
+}
+
+.produto-card p.produto-preco {
+    font-family: var(--font-family-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-accent-pink);
+    padding: 0 var(--spacing-medium);
+    margin: var(--spacing-small) 0;
+    text-align: center;
+}
+
+.produto-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--spacing-medium) var(--spacing-medium);
+    gap: var(--spacing-small);
+    margin-top: auto;
+}
+
+.quantidade-input {
+    width: 60px;
+    padding: var(--spacing-small);
+    border: 1px solid var(--color-light-gray);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.btn-add-cart {
+    flex-grow: 1;
+    background-color: var(--color-accent-lime);
+    color: var(--color-dark-gray);
+    padding: var(--spacing-small);
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 4px;
+}
+
+.btn-add-cart:hover {
+    background-color: #E6EE9C;
+}
+
+/* ==========================================================================
+   Modal do Carrinho (Mantido o estilo anterior para funcionalidade)
+   ========================================================================== */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal.active {
+    display: block;
+}
+
+.modal-content {
+    background-color: var(--color-white);
+    margin: 10% auto;
+    padding: var(--spacing-large);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+}
+
+@keyframes animatetop {
+    from {top: -300px; opacity: 0}
+    to {top: 0; opacity: 1}
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-light-gray);
+    padding-bottom: var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
+}
+
+.modal-title {
+    color: var(--color-primary-purple);
+    margin: 0;
+}
+
+.close-btn {
+    color: var(--color-dark-gray);
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-small) 0;
+    border-bottom: 1px dashed var(--color-light-gray);
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item-info {
+    flex-grow: 1;
+}
+
+.cart-item-name {
+    font-weight: 600;
+    color: var(--color-primary-purple);
+    font-family: var(--font-family-sans);
+}
+
+.cart-item-details {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    opacity: 0.8;
+}
+
+.cart-item-remove {
+    background-color: var(--color-accent-pink);
+    color: var(--color-white);
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+}
+
+.cart-item-remove:hover {
+    background-color: #C2185B; /* Tom mais escuro de rosa */
+}
+
+.cart-total {
+    font-family: var(--font-family-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: right;
+    padding-top: var(--spacing-medium);
+    border-top: 1px solid var(--color-light-gray);
+    margin-top: var(--spacing-medium);
+    color: var(--color-primary-purple);
+}
+
+/* ==========================================================================
+   Rodapé (Footer) - Adaptado ao novo template
+   ========================================================================== */
+
+.footer {
+    background-color: var(--color-dark-gray);
+    color: var(--color-light-gray);
+    padding: var(--spacing-xlarge) 0;
+    text-align: center;
+    margin-top: var(--spacing-xlarge);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.footer-content {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer p {
+    margin: var(--spacing-small) 0;
+    font-size: 0.9rem;
+}
+
+.footer a {
+    color: var(--color-accent-lime);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: var(--color-accent-orange);
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsividade Básica
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: var(--spacing-medium);
+        padding: var(--spacing-medium);
+    }
+
+    .user-section {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .logo {
+        margin-bottom: var(--spacing-small);
+    }
+
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .produtos-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .user-section {
+        flex-wrap: wrap;
+        gap: var(--spacing-small);
+    }
+
+    .produto-actions {
+        flex-direction: column;
+    }
+
+    .quantidade-input {
+        width: 100%;
+        margin-bottom: var(--spacing-small);
+    }
+
+    .btn-add-cart {
+        width: 100%;
+    }
+}
