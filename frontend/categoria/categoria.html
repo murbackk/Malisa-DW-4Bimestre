@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRUD categoria - Zênite</title>
+  <link rel="stylesheet" href="/frontend/global.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>CRUD categoria</h1>
+    </div>
+    <a href="#" onclick="voltarDashboard()">← Voltar ao Dashboard</a>
+  </header>
+
+  <main>
+    <section>
+      <h2>Cadastro de Categoria</h2>
+
+      <form id="categoriaForm">
+        <div>
+          <label for="searchId">Buscar por ID:</label>
+          <div>
+            <input type="number" id="searchId" placeholder="Digite o ID para buscar">
+            <button type="button" id="btnBuscar">Buscar</button>
+
+            <button type="button" id="btnIncluir">Incluir</button>
+            <button type="button" id="btnAlterar" style="display: none;">Alterar</button>
+            <button type="button" id="btnExcluir" style="display: none;">Excluir</button>
+            <button type="button" id="btnSalvar" style="display: none;">Salvar</button>
+            <button type="button" id="btnCancelar">Cancelar</button>
+          </div>
+        </div>
+
+        <fieldset id="formFields">
+          <legend>Dados da Categoria</legend>
+
+          <div>
+            <label for="idCategoria">ID da Categoria:</label>
+            <input type="number" id="idCategoria" name="idCategoria" required disabled>
+          </div>
+
+          <div>
+            <label for="nomeCategoria">Nome da Categoria:</label>
+            <input type="text" id="nomeCategoria" name="nomeCategoria" required disabled>
+          </div>
+
+          <div>
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" name="descricao" rows="3" disabled></textarea>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+
+    <section>
+      <h3>Lista de Categorias</h3>
+      <div>
+        <table id="categoriaTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody id="categoriaTableBody">
+            <!-- Dados serão carregados dinamicamente -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="messageContainer"></div>
+
+  <script>
+    const API_URL = 'http://localhost:3001/categoria';
+    let modoEdicao = false;
+    let categoriaAtual = null;
+
+    const searchId = document.getElementById('searchId');
+    const idCategoria = document.getElementById('idCategoria');
+    const nomeCategoria = document.getElementById('nomeCategoria');
+    const descricao = document.getElementById('descricao');
+    const btnBuscar = document.getElementById('btnBuscar');
+    const btnIncluir = document.getElementById('btnIncluir');
+    const btnAlterar = document.getElementById('btnAlterar');
+    const btnExcluir = document.getElementById('btnExcluir');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const categoriaTableBody = document.getElementById('categoriaTableBody');
+    const messageContainer = document.getElementById('messageContainer');
+
+    document.addEventListener('DOMContentLoaded', function() {
+      carregarTabela();
+      configurarEventos();
+    });
+
+    function configurarEventos() {
+      btnBuscar.addEventListener('click', buscarCategoria);
+      btnIncluir.addEventListener('click', incluirCategoria);
+      btnAlterar.addEventListener('click', alterarCategoria);
+      btnExcluir.addEventListener('click', excluirCategoria);
+      btnSalvar.addEventListener('click', salvarCategoria);
+      btnCancelar.addEventListener('click', cancelarOperacao);
+
+      searchId.addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          buscarCategoria();
+        }
+      });
+    }
+
+    async function buscarCategoria() {
+      const id = parseInt(searchId.value);
+      if (!id) return mostrarMensagem('Digite um ID válido.', 'error');
+
+      try {
+        const response = await fetch(`${API_URL}/${id}`);
+        if (response.ok) {
+          const categoria = await response.json();
+          preencherFormulario(categoria);
+          mostrarMensagem('Categoria encontrada!', 'success');
+          mostrarBotoesEdicao();
+        } else if (response.status === 404) {
+          mostrarMensagem('Categoria não encontrada.', 'error');
+          limparFormulario();
+        } else {
+          mostrarMensagem('Erro ao buscar categoria.', 'error');
+        }
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+      }
+    }
+
+    function incluirCategoria() {
+      limparFormulario();
+      habilitarFormulario();
+      modoEdicao = false;
+      categoriaAtual = null;
+      mostrarBotaoSalvar();
+      idCategoria.focus();
+      mostrarMensagem('Preencha os dados da nova categoria.', 'info');
+    }
+
+    function alterarCategoria() {
+      if (!categoriaAtual) return mostrarMensagem('Nenhuma categoria selecionada.', 'error');
+      habilitarFormulario();
+      idCategoria.disabled = true;
+      modoEdicao = true;
+      mostrarBotaoSalvar();
+      nomeCategoria.focus();
+      mostrarMensagem('Altere os dados da categoria.', 'info');
+    }
+
+    async function excluirCategoria() {
+      if (!categoriaAtual) return mostrarMensagem('Nenhuma categoria selecionada.', 'error');
+
+      if (confirm(`Excluir a categoria "${categoriaAtual.nomecategoria}"?`)) {
+        try {
+          const response = await fetch(`${API_URL}/${categoriaAtual.idcategoria}`, { method: 'DELETE' });
+          if (response.ok || response.status === 204) {
+            mostrarMensagem('Categoria excluída!', 'success');
+            carregarTabela();
+            limparFormulario();
+          } else {
+            const data = await response.json();
+            mostrarMensagem(data.error || 'Erro ao excluir categoria.', 'error');
+          }
+        } catch (error) {
+          console.error(error);
+          mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+        }
+      }
+    }
+
+    async function salvarCategoria() {
+      const id = parseInt(idCategoria.value);
+      const nome = nomeCategoria.value.trim();
+      const desc = descricao.value.trim();
+
+      if (!nome) return mostrarMensagem('O nome da categoria é obrigatório.', 'error');
+
+      try {
+        const dados = { nomeCategoria: nome, descricao: desc };
+        let response;
+
+        if (modoEdicao && categoriaAtual) {
+          response = await fetch(`${API_URL}/${categoriaAtual.idcategoria}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+          });
+          if (response.ok) mostrarMensagem('Categoria atualizada!', 'success');
+        } else {
+          dados.idCategoria = id;
+          response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+          });
+          if (response.ok || response.status === 201) mostrarMensagem('Categoria criada!', 'success');
+        }
+
+        if (!response.ok && response.status !== 201) {
+          const data = await response.json();
+          mostrarMensagem(data.error || 'Erro ao salvar categoria.', 'error');
+          return;
+        }
+
+        carregarTabela();
+        cancelarOperacao();
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem('Erro ao conectar com o servidor.', 'error');
+      }
+    }
+
+    function cancelarOperacao() {
+      limparFormulario();
+      desabilitarFormulario();
+      esconderBotoesEdicao();
+      modoEdicao = false;
+      categoriaAtual = null;
+    }
+
+    function preencherFormulario(categoria) {
+      idCategoria.value = categoria.idcategoria || '';
+      nomeCategoria.value = categoria.nomecategoria || '';
+      descricao.value = categoria.descricao || '';
+      categoriaAtual = categoria;
+    }
+
+    function limparFormulario() {
+      searchId.value = '';
+      idCategoria.value = '';
+      nomeCategoria.value = '';
+      descricao.value = '';
+      categoriaAtual = null;
+    }
+
+    function habilitarFormulario() {
+      idCategoria.disabled = false;
+      nomeCategoria.disabled = false;
+      descricao.disabled = false;
+    }
+
+    function desabilitarFormulario() {
+      idCategoria.disabled = true;
+      nomeCategoria.disabled = true;
+      descricao.disabled = true;
+    }
+
+    function mostrarBotoesEdicao() {
+      btnAlterar.style.display = 'inline-block';
+      btnExcluir.style.display = 'inline-block';
+      btnSalvar.style.display = 'none';
+    }
+
+    function mostrarBotaoSalvar() {
+      btnAlterar.style.display = 'none';
+      btnExcluir.style.display = 'none';
+      btnSalvar.style.display = 'inline-block';
+    }
+
+    function esconderBotoesEdicao() {
+      btnAlterar.style.display = 'none';
+      btnExcluir.style.display = 'none';
+      btnSalvar.style.display = 'none';
+    }
+
+    async function carregarTabela() {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Erro ao carregar categorias');
+
+        const categorias = await response.json();
+        categoriaTableBody.innerHTML = '';
+
+        categorias.forEach(categoria => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${categoria.idcategoria}</td>
+            <td>${categoria.nomecategoria}</td>
+            <td>${categoria.descricao || ''}</td>
+          `;
+          row.addEventListener('click', () => {
+            searchId.value = categoria.idcategoria;
+            preencherFormulario(categoria);
+            mostrarBotoesEdicao();
+            mostrarMensagem('Categoria selecionada.', 'info');
+          });
+          categoriaTableBody.appendChild(row);
+        });
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem('Erro ao carregar lista de categorias.', 'error');
+      }
+    }
+
+    function mostrarMensagem(texto, tipo) {
+      const message = document.createElement('div');
+      message.textContent = texto;
+      message.style.padding = '10px';
+      message.style.marginBottom = '10px';
+      message.style.borderRadius = '5px';
+      message.style.color = 'white';
+      message.style.position = 'fixed';
+      message.style.top = '20px';
+      message.style.right = '20px';
+      message.style.zIndex = '1000';
+      message.style.minWidth = '250px';
+      message.style.backgroundColor =
+        tipo === 'success' ? '#059669' :
+        tipo === 'error' ? '#dc2626' : '#3b82f6';
+
+      messageContainer.appendChild(message);
+      setTimeout(() => message.remove(), 4000);
+    }
+
+    function voltarDashboard() {
+      if (confirm('Tem certeza que deseja voltar ao dashboard?')) {
+        window.history.back();
+      }
+    }
+  </script>
+</body>
+</html>

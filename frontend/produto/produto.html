@@ -143,22 +143,31 @@
             imagem.addEventListener('change', previewImagem);
         }
 
-        async function carregarCategorias() {
-            try {
-                
-                
-                idCategoria.innerHTML = '<option value="">Selecione uma categoria</option>';
-                categorias.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat.idcategoria;
-                    option.textContent = cat.nomecategoria;
-                    idCategoria.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Erro ao carregar categorias:', error);
-                mostrarMensagem('Erro ao carregar categorias.', 'error');
-            }
+       async function carregarCategorias() {
+    try {
+        const response = await fetch('http://localhost:3001/categoria');
+
+        if (!response.ok) {
+            throw new Error('Erro ao buscar categorias');
         }
+
+        categorias = await response.json();
+
+        idCategoria.innerHTML = '<option value="">Selecione uma categoria</option>';
+
+        categorias.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.idcategoria;
+            option.textContent = cat.nomecategoria;
+            idCategoria.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar categorias:', error);
+        mostrarMensagem('Erro ao carregar categorias.', 'error');
+    }
+}
+
 
         async function buscarProduto() {
             const id = parseInt(searchId.value);
@@ -261,9 +270,10 @@
 
             try {
                 const formData = new FormData();
-                formData.append('nomeProduto', nome);
-                formData.append('precoUnitario', preco);
-                formData.append('descricao', desc);
+                formData.append('nomeproduto', nome);
+                formData.append('precounitario', preco);
+                formData.append('idcategoria', catId);
+
                 if (catId) formData.append('idCategoria', catId);
                 
                 if (imagem.files.length > 0) {

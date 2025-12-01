@@ -99,15 +99,20 @@
 
         // Verificar se o usuário é gerente
         async function verificarGerente(idUsuario) {
+             console.log("ID recebido:", idUsuario);
             try {
                 const response = await fetch(`http://localhost:3001/login/verificarGerente?idusuario=${idUsuario}`);
                 const data = await response.json();
-                if (data.isGerente) {
+                console.log("Função chamada", idUsuario);
+                if (data.isGerente === true) {
                     document.getElementById('gerenciarBtn').style.display = 'block';
+                } else {
+                     document.getElementById('gerenciarBtn').style.display = 'none'; 
                 }
             } catch (error) {
                 console.error('Erro ao verificar se é gerente:', error);
             }
+
         }
 
         // Ir para página de gerenciamento
