@@ -284,27 +284,28 @@ async function carregarProdutos() {
                 );
 
                 const pedidoData = {
-                    idUsuario: usuarioLogado.idUsuario,
-                    valorTotal: valorTotal,
-                    produtos: carrinho.map(item => ({
-                        idProduto: item.idproduto,
-                        quantidade: item.quantidade,
-                        precoUnitario: item.precounitario
-                    }))
-                };
+                idCliente: usuarioLogado.idCliente,  // <-- ADICIONE ISTO
+                idUsuario: usuarioLogado.idUsuario,
+                produtos: carrinho.map(item => ({
+                idProduto: item.idproduto,
+                quantidade: item.quantidade,
+             precoUnitario: item.precounitario
+              }))
+};
 
-                const response = await fetch('http://localhost:3001/api/pedidos', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(pedidoData)
-                });
+const response = await fetch('http://localhost:3001/pedido', {  // <-- ROTA CORRETA
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(pedidoData)
+});
+
 
                 const result = await response.json();
 
                 if (response.ok) {
-                    localStorage.setItem('pedidoId', result.pedido.idpedido);
+                   localStorage.setItem('pedidoId', result.idpedido);
                     mostrarAlerta('Pedido registrado com sucesso!', 'success');
                     carrinho = [];
                     atualizarCarrinho();

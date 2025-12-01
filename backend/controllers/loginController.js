@@ -124,3 +124,24 @@ exports.verificarGerente = async (req, res) => {
     }
 };
 
+exports.getClienteByUsuario = async (req, res) => {
+    const { idusuario } = req.params;
+
+    try {
+        const result = await req.db.query(
+            "SELECT idcliente FROM cliente WHERE idusuario = $1",
+            [idusuario]
+        );
+
+        if (result.rows.length === 0) {
+            return res.json({ idCliente: null });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao buscar cliente" });
+    }
+};
+
+

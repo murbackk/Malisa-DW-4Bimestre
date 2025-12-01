@@ -8,6 +8,8 @@ router.post('/verificarSenha', loginController.verificarSenha);
 router.post('/verificaSeUsuarioEstaLogado', loginController.verificaSeUsuarioEstaLogado);
 router.post('/logout', loginController.logout);
 router.get('/verificarGerente', loginController.verificarGerente);
+router.get('/getClienteByUsuario/:idusuario', loginController.getClienteByUsuario);
+
 
 
 module.exports = router;
