@@ -20,20 +20,46 @@
         <div class="header-logo">
         <img src="backend/uploads/zenite_store_logo_star.png" alt="Zenite Store Logo">
         <div class="logo">Zenite Store</div></div>
-        <div class="user-section">
-            <div id="welcomeSection" style="display: none;">
-                   <span id="nomeUsuario" style=margin-right: 10px;"></span>
-                <button id="gerenciarBtn" class="btn btn-secondary" onclick="goToGerenciar()" style="display: none;">Gerenciar</button>
-                <button class="btn btn-danger" onclick="logout()">Sair</button>
-            </div>
-            <div id="loginSection">
-                <button class="btn btn-primary" onclick="goToLogin()">Login/Cadastro</button>
-            </div>
-            <button class="btn cart-btn" onclick="openCart()">
-                Carrinho
-                <span class="cart-count" id="cartCount">0</span>
-            </button>
+       <div class="user-section">
+    <!-- Menu quando estiver logado -->
+    <div id="welcomeSection" class="menu-wrapper" style="display: none;">
+        <button id="menuBtn" class="menu-btn" aria-haspopup="true" aria-expanded="false">
+            <!-- SVG de pessoa -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span id="saudacaoUsuario" class="saudacao">Olá, <span id="nomeUsuario" style="font-weight:600;"></span></span>
+            <!-- caret -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="caret-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+
+        <div id="menuDropdown" class="menu-dropdown" role="menu" aria-hidden="true">
+            <!-- item Gerenciar (visível só para gerente; será controlado pelo JS) -->
+            <a id="menuGerenciarLink" class="menu-item" href="frontend/menu.html" role="menuitem" style="display:none;">Gerenciar</a>
+
+            <!-- páginas públicas -->
+            <a class="menu-item" href="frontend/navbar/contato.html" role="menuitem">Contato</a>
+            <a class="menu-item" href="frontend/navbar/sobrenos.html" role="menuitem">Sobre nós</a>
+
+            <!-- Sair -->
+            <button id="menuSairBtn" class="menu-item menu-logout" role="menuitem" style="color: crimson;">Sair</button>
         </div>
+    </div>
+
+    <!-- Se não está logado -->
+    <div id="loginSection">
+        <button class="btn btn-primary" onclick="goToLogin()">Login/Cadastro</button>
+    </div>
+
+    <button class="btn cart-btn" onclick="openCart()">
+        Carrinho
+        <span class="cart-count" id="cartCount">0</span>
+    </button>
+</div>
+
     </div>
 
     <div class="container">
@@ -83,6 +109,8 @@
        function verificarLogin() {
     const user = localStorage.getItem('usuarioLogado');
     const nomeSpan = document.getElementById('nomeUsuario');
+    atualizarSaudacao();
+
 
     if (user) {
         usuarioLogado = JSON.parse(user);
@@ -95,6 +123,7 @@
             nomeSpan.textContent = `Bem-vindo(a), ${usuarioLogado.nomeUsuario}!`;
         } else {
             nomeSpan.textContent = 'Bem-vindo(a)!';
+            
         }
 
         // Verificar se é gerente
@@ -365,6 +394,84 @@ const response = await fetch('http://localhost:3001/pedido', {  // <-- ROTA CORR
             verificarLogin();
             mostrarAlerta('Logout realizado com sucesso!', 'success');
         }
+
+
+        // --- CONTROLES DO MENU DE USUÁRIO ---
+const menuBtn = document.getElementById('menuBtn');
+const menuDropdown = document.getElementById('menuDropdown');
+const menuSairBtn = document.getElementById('menuSairBtn');
+const nomeUsuarioSpan = document.getElementById('nomeUsuario');
+const menuGerenciarLink = document.getElementById('menuGerenciarLink');
+
+// Abrir/fechar dropdown ao clicar no botão
+if (menuBtn) {
+    menuBtn.addEventListener('click', (e) => {
+        const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+        menuBtn.setAttribute('aria-expanded', (!expanded).toString());
+        menuDropdown.classList.toggle('show');
+        menuDropdown.setAttribute('aria-hidden', expanded ? 'true' : 'false');
+    });
+}
+
+// Fechar quando clicar fora
+document.addEventListener('click', (e) => {
+    if (!menuDropdown) return;
+    if (!menuDropdown.classList.contains('show')) return;
+    const target = e.target;
+    if (!menuDropdown.contains(target) && !menuBtn.contains(target)) {
+        menuDropdown.classList.remove('show');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        menuDropdown.setAttribute('aria-hidden', 'true');
+    }
+});
+
+// Botão sair dentro do menu
+if (menuSairBtn) {
+    menuSairBtn.addEventListener('click', (e) => {
+        logout();
+        // fechar menu
+        menuDropdown.classList.remove('show');
+        menuBtn.setAttribute('aria-expanded', 'false');
+    });
+}
+
+// Atualiza o nome no menu assim que o verificarLogin rodar
+// (verificarLogin já popula nomeUsuario no seu código; só certificamos que o texto "Olá," aparece)
+function atualizarSaudacao() {
+    const user = localStorage.getItem('usuarioLogado');
+    if (!user) return;
+    const usuario = JSON.parse(user);
+    if (usuario.nomeUsuario) {
+        nomeUsuarioSpan.textContent = usuario.nomeUsuario;
+    } else if (usuario.nome) {
+        nomeUsuarioSpan.textContent = usuario.nome;
+    } else {
+        nomeUsuarioSpan.textContent = 'usuário';
+    }
+}
+
+// Chame atualizarSaudacao() dentro de verificarLogin(), logo após popular usuarioLogado.
+// Exemplo: depois de setar nomeSpan.textContent = `Bem-vindo(a), ${usuarioLogado.nomeUsuario}!`
+// apenas invoque: atualizarSaudacao();
+
+// --- Ajuste em verificarGerente: em vez de mostrar o botão 'gerenciarBtn', agora mostramos o link no menu ---
+async function verificarGerente(idUsuario) {
+    console.log("ID recebido:", idUsuario);
+    try {
+        const response = await fetch(`http://localhost:3001/login/verificarGerente?idusuario=${idUsuario}`);
+        const data = await response.json();
+        console.log("Função chamada", idUsuario);
+        if (data.isGerente === true) {
+            // mostrar link Gerenciar no menu
+            if (menuGerenciarLink) menuGerenciarLink.style.display = 'block';
+        } else {
+            if (menuGerenciarLink) menuGerenciarLink.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Erro ao verificar se é gerente:', error);
+        if (menuGerenciarLink) menuGerenciarLink.style.display = 'none';
+    }
+}
 
     
     </script>

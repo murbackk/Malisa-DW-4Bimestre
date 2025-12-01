@@ -210,6 +210,71 @@ body::before {
     background-color: var(--color-light-gray);
 }
 
+:root {
+    --color-template-text: #5E35B1;
+}
+
+/* Menu botão */
+.menu-wrapper { position: relative; display: flex; align-items: center; gap: 8px; }
+.menu-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid rgba(94,53,177,0.12);
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--color-template-text);
+    font-family: inherit;
+    font-size: 14px;
+}
+.menu-btn:focus { outline: 2px solid rgba(94,53,177,0.18); outline-offset: 2px; }
+
+/* SVG sizing */
+.menu-icon { width: 20px; height: 20px; color: var(--color-template-text); }
+.caret-icon { width: 14px; height: 14px; color: var(--color-template-text); }
+
+/* Dropdown */
+.menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    min-width: 170px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 6px;
+    display: none;
+    z-index: 50;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+.menu-dropdown.show { display: block; }
+
+.menu-item {
+    display: block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #222;
+    font-size: 14px;
+    border-radius: 8px;
+    margin: 4px 0;
+    text-align: left;
+    background: transparent;
+    cursor: pointer;
+}
+.menu-item:hover { background: rgba(94,53,177,0.06); color: var(--color-template-text); }
+
+/* estilo do botão sair dentro do menu */
+.menu-logout { width: 100%; border: none; background: transparent; text-align: left; }
+
+/* responsividade */
+@media (max-width: 640px) {
+    .saudacao { display: none; } /* esconder o texto em telas pequenas */
+}
+
+
+
 /* ==========================================================================
    Hero Section (Nova seção de destaque)
    ========================================================================== */
