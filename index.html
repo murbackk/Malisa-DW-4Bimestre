@@ -1,3 +1,4 @@
+<!-- index.html corrigido completo - Zenite Store -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5,90 +6,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zenite Store</title>
     <link rel="shortcut icon" href="backend/uploads/zenite_store_logo_star.png" type="image/x-icon">
-   <!-- Importação das fontes do Google para replicar o template -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    
-    <!-- Link para o CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@100..900&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- O restante do HTML do usuário (header, container, modal, script) -->
     <div class="header">
         <div class="header-logo">
-        <img src="backend/uploads/zenite_store_logo_star.png" alt="Zenite Store Logo">
-        <div class="logo">Zenite Store</div></div>
-       <div class="user-section">
-    <!-- Menu quando estiver logado -->
-    <div id="welcomeSection" class="menu-wrapper" style="display: none;">
-        <button id="menuBtn" class="menu-btn" aria-haspopup="true" aria-expanded="false">
-            <!-- SVG de pessoa -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span id="saudacaoUsuario" class="saudacao">Olá, <span id="nomeUsuario" style="font-weight:600;"></span></span>
-            <!-- caret -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="caret-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-        </button>
-
-        <div id="menuDropdown" class="menu-dropdown" role="menu" aria-hidden="true">
-            <!-- item Gerenciar (visível só para gerente; será controlado pelo JS) -->
-            <a id="menuGerenciarLink" class="menu-item" href="frontend/menu.html" role="menuitem" style="display:none;">Gerenciar</a>
-
-            <!-- páginas públicas -->
-            <a class="menu-item" href="frontend/navbar/contato.html" role="menuitem">Contato</a>
-            <a class="menu-item" href="frontend/navbar/sobrenos.html" role="menuitem">Sobre nós</a>
-
-            <!-- Sair -->
-            <button id="menuSairBtn" class="menu-item menu-logout" role="menuitem" style="color: crimson;">Sair</button>
+            <img src="backend/uploads/zenite_store_logo_star.png" alt="Zenite Store Logo">
+            <div class="logo">Zenite Store</div>
         </div>
-    </div>
 
-    <!-- Se não está logado -->
-    <div id="loginSection">
-        <button class="btn btn-primary" onclick="goToLogin()">Login/Cadastro</button>
-    </div>
+        <div class="user-section">
+            <div id="welcomeSection" class="menu-wrapper" style="display: none;">
+                <button id="menuBtn" class="menu-btn" aria-haspopup="true" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span class="saudacao">Olá, <span id="nomeUsuario" style="font-weight:600;"></span></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="caret-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
 
-    <button class="btn cart-btn" onclick="openCart()">
-        Carrinho
-        <span class="cart-count" id="cartCount">0</span>
-    </button>
-</div>
+                <div id="menuDropdown" class="menu-dropdown" role="menu" aria-hidden="true">
+                    <a id="menuGerenciarLink" class="menu-item" href="frontend/menu.html" style="display:none;">Gerenciar</a>
+                    <a class="menu-item" href="frontend/navbar/contato.html">Contato</a>
+                    <a class="menu-item" href="frontend/navbar/sobrenos.html">Sobre nós</a>
+                    <button id="menuSairBtn" class="menu-item menu-logout" style="color: crimson;">Sair</button>
+                </div>
+            </div>
 
+            <div id="loginSection">
+                <button class="btn btn-primary" onclick="goToLogin()">Login/Cadastro</button>
+            </div>
+
+            <button class="btn cart-btn" onclick="openCart()">
+                Carrinho
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+        </div>
     </div>
 
     <div class="container">
         <div id="alertContainer"></div>
-        
-        <!-- Seção de destaque inspirada no template -->
+
         <section class="hero-section">
             <p class="hero-subtitle">Inspire-se para criar e crie para inspirar.</p>
             <h1 class="hero-title">Use Zenite.</h1>
-            <p class="hero-description">
-                A loja mais exclusiva da galáxia, aquela que atinge o ponto mais alto no céu, o ápice, o topo.
-            </p>
+            <p class="hero-description">A loja mais exclusiva da galáxia, aquela que atinge o ponto mais alto no céu, o ápice, o topo.</p>
             <button class="btn btn-primary hero-btn" onclick="goToLogin()" id="loginbody">FAZER LOGIN</button>
         </section>
 
+        <!-- BOTÕES DE FILTRO -->
+        <div class="filtro-categorias" style="display:flex; gap:10px; justify-content:center; margin:25px 0;">
+            <button class="btn btn-primary" onclick="filtrarCategoria(1)">Roupas</button>
+            <button class="btn btn-primary" onclick="filtrarCategoria(2)">Festa</button>
+            <button class="btn btn-primary" onclick="filtrarCategoria(3)">Colecionador</button>
+        </div>
+
         <div id="produtosContainer" class="produtos-grid"></div>
-        <div id="loadingContainer" class="loading">Carregando produtos...</div>
     </div>
 
+
+    <!-- MODAL DO CARRINHO -->
     <div id="cartModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">MEU CARRINHO</h2>
                 <button class="close-btn" onclick="closeCart()">&times;</button>
             </div>
+
             <div id="cartItems"></div>
-            <div class="cart-total">
-                Total: R$ <span id="cartTotalValue">0.00</span>
-            </div>
+
+            <div class="cart-total">Total: R$ <span id="cartTotalValue">0.00</span></div>
             <div class="cart-actions">
                 <button class="btn btn-secondary" style="flex: 1;" onclick="finalizarCompra()">Finalizar Compra</button>
             </div>
@@ -96,62 +91,49 @@
     </div>
 
     <footer class="zen-footer">
+        <div class="zen-footer-content">
+            <img src="backend/uploads/zenite_store_logo_star.png" class="zen-footer-logo">
+            <p class="zen-footer-phrase">“No ponto mais alto, encontramos o que realmente brilha.”</p>
+            <div class="zen-footer-links">
+                <a href="frontend/navbar/sobrenos.html">Sobre nós</a>
+                <a href="frontend/navbar/contato.html">Contato</a>
+                <a href="#produtosContainer">Roupas</a>
+            </div>
 
-    <div class="zen-footer-content">
-
-        <img src="backend/uploads/zenite_store_logo_star.png" alt="Zenite Logo" class="zen-footer-logo">
-
-        <p class="zen-footer-phrase">
-            “No ponto mais alto, encontramos o que realmente brilha.”
-        </p>
-
-        <div class="zen-footer-links">
-            <a href="frontend/navbar/sobrenos.html">Sobre nós</a>
-            <a href="frontend/navbar/contato.html">Contato</a>
-            <a href="#produtosContainer">Roupas</a>
+            <div class="zen-footer-social">
+                <a href="https://instagram.com/mariaelismurbk" target="_blank">Instagram</a>
+                <a href="https://tiktok.com/@mariaelismurbk" target="_blank">TikTok</a>
+                <a href="https://twitter.com/mariaelismurbk" target="_blank">Twitter</a>
+            </div>
+            <p class="zen-footer-copy">© 2025 Zenite Store • By MurbasLabs</p>
         </div>
-
-        <div class="zen-footer-social">
-            <a href="https://instagram.com/mariaelismurbk" target="_blank" aria-label="Instagram">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M7 2C4.2 2 2 4.2 2 7v10c0 2.8 2.2 5 5 5h10c2.8 0 5-2.2 5-5V7c0-2.8-2.2-5-5-5H7zm10 2c1.7 0 3 1.3 3 3v10c0 1.7-1.3 3-3 3H7c-1.7 0-3-1.3-3-3V7c0-1.7 1.3-3 3-3h10zm-5 3.3A4.7 4.7 0 1 0 16.7 12 4.7 4.7 0 0 0 12 7.3zm0 7.7a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm4.8-8.8a1.1 1.1 0 1 1-1.1-1.1 1.1 1.1 0 0 1 1.1 1.1z"/>
-                </svg>
-            </a>
-
-            <a href="https://tiktok.com/@mariaelismurbk" target="_blank" aria-label="TikTok">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12.75 2h3.25a5.76 5.76 0 0 0 5.75 5.75v3.25a9 9 0 0 1-5.75-1.98v7.73a6.75 6.75 0 1 1-6.75-6.75 6.5 6.5 0 0 1 1.5.17V14a3.5 3.5 0 1 0 2.25 3.28V2z"/>
-                </svg>
-            </a>
-
-            <a href="https://twitter.com/mariaelismurbk" target="_blank" aria-label="X/Twitter">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19.6 3H16l-4 5-4-5H3.8l6.2 7.5L3.4 21h3.6l4.6-6 4.4 6h3.6l-6.4-7.8L19.6 3z"/>
-                </svg>
-            </a>
-        </div>
-
-        <p class="zen-footer-copy">© 2025 Zenite Store • By MurbasLabs</p>
-    </div>
-</footer>
+    </footer>
 
 
-    <script>
-        let carrinho = [];
-        let produtos = [];
-        let usuarioLogado = null;
+<script>
+//----------------------------------------------
+// VARIÁVEIS GLOBAIS
+//----------------------------------------------
+let carrinho = [];
+let produtos = [];
+let usuarioLogado = null;
+let categoriaSelecionada = null;
 
-        window.addEventListener('load', () => {
-         verificarLogin();
-         carregarProdutos();
-        });
+//----------------------------------------------
+// CARREGAR AO INICIAR
+//----------------------------------------------
+window.addEventListener('load', () => {
+    verificarLogin();
+    carregarProdutos();
+});
 
-        // Verifica se usuário está logado
-       function verificarLogin() {
+//----------------------------------------------
+// LOGIN
+//----------------------------------------------
+function verificarLogin() {
     const user = localStorage.getItem('usuarioLogado');
     const nomeSpan = document.getElementById('nomeUsuario');
     atualizarSaudacao();
-
 
     if (user) {
         usuarioLogado = JSON.parse(user);
@@ -159,362 +141,308 @@
         document.getElementById('welcomeSection').style.display = 'flex';
         document.getElementById('loginbody').style.display = 'none';
 
-        // Mostra o nome do usuário
-        if (usuarioLogado.nomeUsuario) {
-            nomeSpan.textContent = `Bem-vindo(a), ${usuarioLogado.nomeUsuario}!`;
-        } else {
-            nomeSpan.textContent = 'Bem-vindo(a)!';
-            
-        }
+        nomeSpan.textContent = usuarioLogado.nomeUsuario || 'Usuário';
 
-        // Verificar se é gerente
         verificarGerente(usuarioLogado.idUsuario);
     } else {
         document.getElementById('loginSection').style.display = 'block';
         document.getElementById('welcomeSection').style.display = 'none';
-        nomeSpan.textContent = '';
     }
 }
 
+//----------------------------------------------
+// GERENTE
+//----------------------------------------------
+async function verificarGerente(idUsuario) {
+    try {
+        const response = await fetch(`http://localhost:3001/login/verificarGerente?idusuario=${idUsuario}`);
+        const data = await response.json();
 
-        // Verificar se o usuário é gerente
-        async function verificarGerente(idUsuario) {
-             console.log("ID recebido:", idUsuario);
-            try {
-                const response = await fetch(`http://localhost:3001/login/verificarGerente?idusuario=${idUsuario}`);
-                const data = await response.json();
-                console.log("Função chamada", idUsuario);
-                if (data.isGerente === true) {
-                    document.getElementById('gerenciarBtn').style.display = 'block';
-                } else {
-                     document.getElementById('gerenciarBtn').style.display = 'none'; 
-                }
-            } catch (error) {
-                console.error('Erro ao verificar se é gerente:', error);
-            }
-
+        if (data.isGerente === true) {
+            menuGerenciarLink.style.display = 'block';
         }
+    } catch (error) {
+        console.error('Erro ao verificar gerente:', error);
+    }
+}
 
-        // Ir para página de gerenciamento
-        function goToGerenciar() {
-            window.location.href = 'frontend/menu.html'; // Ajuste o caminho conforme necessário
-        }
+//----------------------------------------------
+// FILTRAR CATEGORIA
+//----------------------------------------------
+function filtrarCategoria(idCategoria) {
+    categoriaSelecionada = idCategoria;
+    console.log("Filtrando categoria:", idCategoria);
+    renderizarProdutos();
+}
 
-       // index.html (Linhas 92-97 após a correção)
-
-// Carregar produtos
+//----------------------------------------------
+// CARREGAR PRODUTOS
+//----------------------------------------------
 async function carregarProdutos() {
     try {
-        const response = await fetch('http://localhost:3001/produto' ); // Rota corrigida
-        if (!response.ok) { // Adicionado tratamento para erros HTTP
-            throw new Error(`Erro HTTP: ${response.status} ${response.statusText}`);
-        }
+        const response = await fetch('http://localhost:3001/produto');
         const data = await response.json();
-        produtos = Array.isArray(data) ? data : []; // Garante que 'produtos' é um array
+        produtos = Array.isArray(data) ? data : [];
         renderizarProdutos();
-        // ...
     } catch (error) {
-        // ...
+        console.error('Erro ao carregar produtos:', error);
     }
 }
 
-        // Renderizar produtos
-        function renderizarProdutos() {
-            const container = document.getElementById('produtosContainer');
-            container.innerHTML = '';
+//----------------------------------------------
+// RENDERIZAR PRODUTOS (FINAL E CORRETO)
+//----------------------------------------------
+function renderizarProdutos() {
+    const container = document.getElementById('produtosContainer');
+    container.innerHTML = '';
 
-            if (produtos.length === 0) {
-                container.innerHTML = '<p style="color: white; text-align: center; width: 100%;">Nenhum produto disponível no momento.</p>';
-                return;
-            }
+    let lista = produtos;
 
-            produtos.forEach(produto => {
-                const card = document.createElement('div');
-                card.className = 'produto-card';
-               card.innerHTML = `
-    <div class="produto-imagem">
-        ${
-            produto.imagem 
-            ? `<img src="http://localhost:3001/${produto.imagem}" 
-                   alt="${produto.nomeproduto}"
-                   style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`
-            : "📦 Sem imagem"
-        }
-    </div>
-    <h3 class="produto-nome">${produto.nomeproduto}</h3>
-    <p class="produto-preco">R$ ${parseFloat(produto.precounitario).toFixed(2)}</p>
-    <div class="produto-actions">
-        <input type="number" class="quantidade-input" value="1" min="1" id="qtd-${produto.idproduto}">
-        <button class="btn-add-cart" onclick="adicionarAoCarrinho(${produto.idproduto})">
-            Adicionar
-        </button>
-    </div>
+    if (categoriaSelecionada !== null) {
+        lista = produtos.filter(p => {
+            const categoria = p.idcategoria || p.idCategoria || p.categoria_id;
+            return Number(categoria) === Number(categoriaSelecionada);
+        });
+    }
+
+    if (lista.length === 0) {
+        container.innerHTML = '<p style="color:white; text-align:center;">Nenhum produto encontrado.</p>';
+        return;
+    }
+
+    lista.forEach(produto => {
+        const card = document.createElement('div');
+        card.className = 'produto-card';
+
+        card.innerHTML = `
+            <div class="produto-imagem">
+                ${produto.imagem
+                    ? `<img src="http://localhost:3001/${produto.imagem}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`
+                    : '📦 Sem imagem'}
+            </div>
+            <h3 class="produto-nome">${produto.nomeproduto}</h3>
+            <p class="produto-preco">R$ ${parseFloat(produto.precounitario).toFixed(2)}</p>
+<div class="produto-actions">
+    <input type="number" class="quantidade-input" value="1" min="1" id="qtd-${produto.idproduto}">
+    <button class="btn-add-cart" onclick="adicionarAoCarrinho(${produto.idproduto})">Adicionar</button>
+</div>
 `;
 
-                container.appendChild(card);
-            });
-        }
+        container.appendChild(card);
+    }); // end lista.forEach
+} // end renderizarProdutos
 
-        // Adicionar ao carrinho
-        function adicionarAoCarrinho(idProduto) {
-            const produto = produtos.find(p => p.idproduto === idProduto);
-            const quantidade = parseInt(document.getElementById(`qtd-${idProduto}`).value);
+// ---------------------
+// FUNÇÕES DO CARRINHO
+// ---------------------
+function adicionarAoCarrinho(idProduto) {
+    // aceita id como number ou string
+    const produto = produtos.find(p => String(p.idproduto) === String(idProduto));
+    const input = document.getElementById(`qtd-${idProduto}`);
+    const quantidade = input ? parseInt(input.value, 10) || 1 : 1;
 
-            if (!produto || quantidade < 1) return;
+    if (!produto || quantidade < 1) return;
 
-            const itemExistente = carrinho.find(item => item.idproduto === idProduto);
+    const itemExistente = carrinho.find(item => String(item.idproduto) === String(idProduto));
 
-            if (itemExistente) {
-                itemExistente.quantidade += quantidade;
-            } else {
-                carrinho.push({
-                    idproduto: produto.idproduto,
-                    nomeproduto: produto.nomeproduto,
-                    precounitario: parseFloat(produto.precounitario),
-                    quantidade: quantidade
-                });
-            }
+    if (itemExistente) {
+        itemExistente.quantidade += quantidade;
+    } else {
+        carrinho.push({
+            idproduto: produto.idproduto,
+            nomeproduto: produto.nomeproduto,
+            precounitario: parseFloat(produto.precounitario) || 0,
+            quantidade: quantidade
+        });
+    }
 
-            atualizarCarrinho();
-            mostrarAlerta('Produto adicionado ao carrinho!', 'success');
-        }
+    atualizarCarrinho();
+    mostrarAlerta('Produto adicionado ao carrinho!', 'success');
+}
 
-         // Proteção para página de pagamento
-        function protegerPaginaPagamento() {
-            // Esta função será usada na página de pagamento
-            const user = localStorage.getItem('usuarioLogado');
-            if (!user) {
-                alert('Ei, quem é você? Faça login ou cadastro para prosseguir!');
-                window.location.href = '../../index.html';
-                return false;
-            }
-            return true;
-        }
+function atualizarCarrinho() {
+    const count = carrinho.reduce((total, item) => total + (item.quantidade || 0), 0);
+    const cartCountEl = document.getElementById('cartCount');
+    if (cartCountEl) cartCountEl.textContent = count;
+}
 
-        // Atualizar carrinho
-        function atualizarCarrinho() {
-            const count = carrinho.reduce((total, item) => total + item.quantidade, 0);
-            document.getElementById('cartCount').textContent = count;
-        }
+function openCart() {
+    renderizarCarrinho();
+    const modal = document.getElementById('cartModal');
+    if (modal) modal.classList.add('active');
+}
 
-        // Abrir carrinho
-        function openCart() {
-            renderizarCarrinho();
-            document.getElementById('cartModal').classList.add('active');
-        }
+function closeCart() {
+    const modal = document.getElementById('cartModal');
+    if (modal) modal.classList.remove('active');
+}
 
-        // Fechar carrinho
-        function closeCart() {
-            document.getElementById('cartModal').classList.remove('active');
-        }
+function renderizarCarrinho() {
+    const container = document.getElementById('cartItems');
+    if (!container) return;
 
-        // Renderizar carrinho
-        function renderizarCarrinho() {
-            const container = document.getElementById('cartItems');
-            
-            if (carrinho.length === 0) {
-                container.innerHTML = '<div class="empty-cart">Seu carrinho está vazio</div>';
-                document.getElementById('cartTotalValue').textContent = '0.00';
-                return;
-            }
+    if (carrinho.length === 0) {
+        container.innerHTML = '<div class="empty-cart">Seu carrinho está vazio</div>';
+        document.getElementById('cartTotalValue').textContent = '0.00';
+        return;
+    }
 
-            container.innerHTML = '';
-            let total = 0;
+    container.innerHTML = '';
+    let total = 0;
 
-            carrinho.forEach((item, index) => {
-                const subtotal = item.precounitario * item.quantidade;
-                total += subtotal;
+    carrinho.forEach((item, index) => {
+        const subtotal = (item.precounitario || 0) * (item.quantidade || 0);
+        total += subtotal;
 
-                const cartItem = document.createElement('div');
-                cartItem.className = 'cart-item';
-                cartItem.innerHTML = `
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.nomeproduto}</div>
-                        <div class="cart-item-details">
-                            Quantidade: ${item.quantidade} | 
-                            Preço: R$ ${item.precounitario.toFixed(2)} | 
-                            Subtotal: R$ ${subtotal.toFixed(2)}
-                        </div>
-                    </div>
-                    <button class="cart-item-remove" onclick="removerDoCarrinho(${index})">Remover</button>
-                `;
-                container.appendChild(cartItem);
-            });
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+            <div class="cart-item-info">
+                <div class="cart-item-name">${item.nomeproduto}</div>
+                <div class="cart-item-details">
+                    Quantidade: ${item.quantidade} |
+                    Preço: R$ ${Number(item.precounitario).toFixed(2)} |
+                    Subtotal: R$ ${subtotal.toFixed(2)}
+                </div>
+            </div>
+            <button class="cart-item-remove" onclick="removerDoCarrinho(${index})">Remover</button>
+        `;
+        container.appendChild(cartItem);
+    });
 
-            document.getElementById('cartTotalValue').textContent = total.toFixed(2);
-        }
+    document.getElementById('cartTotalValue').textContent = total.toFixed(2);
+}
 
-        // Remover do carrinho
-        function removerDoCarrinho(index) {
-            carrinho.splice(index, 1);
-            atualizarCarrinho();
-            renderizarCarrinho();
-            mostrarAlerta('Produto removido do carrinho', 'success');
-        }
+function removerDoCarrinho(index) {
+    if (index >= 0 && index < carrinho.length) {
+        carrinho.splice(index, 1);
+        atualizarCarrinho();
+        renderizarCarrinho();
+        mostrarAlerta('Produto removido do carrinho', 'success');
+    }
+}
 
-        // Finalizar compra
-        async function finalizarCompra() {
-            if (!usuarioLogado) {
-                mostrarAlerta('Você precisa estar logado para finalizar a compra!', 'error');
-                setTimeout(() => goToLogin(), 2000);
-                return;
-            }
+// ---------------------
+// FINALIZAR COMPRA
+// ---------------------
+async function finalizarCompra() {
+    if (!usuarioLogado) {
+        mostrarAlerta('Você precisa estar logado para finalizar a compra!', 'error');
+        setTimeout(() => goToLogin(), 1200);
+        return;
+    }
 
-            if (carrinho.length === 0) {
-                mostrarAlerta('Seu carrinho está vazio!', 'error');
-                return;
-            }
+    if (carrinho.length === 0) {
+        mostrarAlerta('Seu carrinho está vazio!', 'error');
+        return;
+    }
 
-            try {
-                const valorTotal = carrinho.reduce((total, item) => 
-                    total + (item.precounitario * item.quantidade), 0
-                );
-
-                const pedidoData = {
-                idCliente: usuarioLogado.idCliente,  // <-- ADICIONE ISTO
-                idUsuario: usuarioLogado.idUsuario,
-                produtos: carrinho.map(item => ({
+    try {
+        const pedidoData = {
+            idCliente: usuarioLogado.idCliente || usuarioLogado.idCliente || null,
+            idUsuario: usuarioLogado.idUsuario || null,
+            produtos: carrinho.map(item => ({
                 idProduto: item.idproduto,
                 quantidade: item.quantidade,
-             precoUnitario: item.precounitario
-              }))
-};
+                precoUnitario: item.precounitario
+            }))
+        };
 
-const response = await fetch('http://localhost:3001/pedido', {  // <-- ROTA CORRETA
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(pedidoData)
-});
+        const response = await fetch('http://localhost:3001/pedido', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pedidoData)
+        });
 
+        const result = await response.json();
 
-                const result = await response.json();
-                console.log("RETORNO DO BACKEND:", result);
-
-                if (response.ok) {
-                  localStorage.setItem('pedidoId', result.idPedido);
-                    mostrarAlerta('Pedido registrado com sucesso!', 'success');
-                    carrinho = [];
-                    atualizarCarrinho();
-                    closeCart();
-                    
-                    setTimeout(() => {
-                        window.location.href = 'frontend/pagamento/pagamento.html';
-                    }, 1500);
-                } else {
-                    throw new Error(result.message || 'Erro ao criar pedido');
-                }
-            } catch (error) {
-                console.error('Erro ao finalizar compra:', error);
-                mostrarAlerta('Erro ao finalizar compra. Tente novamente.', 'error');
-            }
-        }
-
-        // Mostrar alerta
-        function mostrarAlerta(mensagem, tipo) {
-            const container = document.getElementById('alertContainer');
-            container.innerHTML = `<div class="alert alert-${tipo} active">${mensagem}</div>`;
-            
-            setTimeout(() => {
-                container.innerHTML = '';
-            }, 3001);
-        }
-
-        // Ir para login
-        function goToLogin() {
-            window.location.href = 'frontend/login/login.html';
-        }
-
-        // Logout
-        function logout() {
-            localStorage.removeItem('usuarioLogado');
-            usuarioLogado = null;
+        if (response.ok) {
+            localStorage.setItem('pedidoId', result.idPedido || result.idPedidoCriado || '');
+            mostrarAlerta('Pedido registrado com sucesso!', 'success');
             carrinho = [];
             atualizarCarrinho();
-            verificarLogin();
-            mostrarAlerta('Logout realizado com sucesso!', 'success');
+            closeCart();
+            // redireciona para pagamento se necessário
+            setTimeout(() => {
+                window.location.href = 'frontend/pagamento/pagamento.html';
+            }, 800);
+        } else {
+            throw new Error(result.message || 'Erro ao criar pedido');
         }
+    } catch (error) {
+        console.error('Erro ao finalizar compra:', error);
+        mostrarAlerta('Erro ao finalizar compra. Tente novamente.', 'error');
+    }
+}
 
+// ---------------------
+// UTILITÁRIOS (alertas, login, logout, menu)
+// ---------------------
+function mostrarAlerta(mensagem, tipo) {
+    const container = document.getElementById('alertContainer');
+    if (!container) return;
+    container.innerHTML = `<div class="alert alert-${tipo} active">${mensagem}</div>`;
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
+}
 
-        // --- CONTROLES DO MENU DE USUÁRIO ---
+function goToLogin() {
+    window.location.href = 'frontend/login/login.html';
+}
+
+function logout() {
+    localStorage.removeItem('usuarioLogado');
+    usuarioLogado = null;
+    carrinho = [];
+    atualizarCarrinho();
+    verificarLogin(); // já existe função acima
+    mostrarAlerta('Logout realizado com sucesso!', 'success');
+}
+
+// ---------------------
+// CONTROLES DO MENU (abrir/fechar, sair)
+// ---------------------
 const menuBtn = document.getElementById('menuBtn');
 const menuDropdown = document.getElementById('menuDropdown');
 const menuSairBtn = document.getElementById('menuSairBtn');
-const nomeUsuarioSpan = document.getElementById('nomeUsuario');
 const menuGerenciarLink = document.getElementById('menuGerenciarLink');
 
-// Abrir/fechar dropdown ao clicar no botão
 if (menuBtn) {
     menuBtn.addEventListener('click', (e) => {
         const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
         menuBtn.setAttribute('aria-expanded', (!expanded).toString());
-        menuDropdown.classList.toggle('show');
-        menuDropdown.setAttribute('aria-hidden', expanded ? 'true' : 'false');
+        if (menuDropdown) menuDropdown.classList.toggle('show');
+        if (menuDropdown) menuDropdown.setAttribute('aria-hidden', expanded ? 'true' : 'false');
     });
 }
 
-// Fechar quando clicar fora
 document.addEventListener('click', (e) => {
     if (!menuDropdown) return;
     if (!menuDropdown.classList.contains('show')) return;
     const target = e.target;
-    if (!menuDropdown.contains(target) && !menuBtn.contains(target)) {
+    if (!menuDropdown.contains(target) && menuBtn && !menuBtn.contains(target)) {
         menuDropdown.classList.remove('show');
-        menuBtn.setAttribute('aria-expanded', 'false');
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
         menuDropdown.setAttribute('aria-hidden', 'true');
     }
 });
 
-// Botão sair dentro do menu
 if (menuSairBtn) {
-    menuSairBtn.addEventListener('click', (e) => {
+    menuSairBtn.addEventListener('click', () => {
         logout();
-        // fechar menu
-        menuDropdown.classList.remove('show');
-        menuBtn.setAttribute('aria-expanded', 'false');
+        if (menuDropdown) menuDropdown.classList.remove('show');
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
     });
 }
 
-// Atualiza o nome no menu assim que o verificarLogin rodar
-// (verificarLogin já popula nomeUsuario no seu código; só certificamos que o texto "Olá," aparece)
+// Atualiza saudação (se existir)
 function atualizarSaudacao() {
     const user = localStorage.getItem('usuarioLogado');
     if (!user) return;
     const usuario = JSON.parse(user);
-    if (usuario.nomeUsuario) {
-        nomeUsuarioSpan.textContent = usuario.nomeUsuario;
-    } else if (usuario.nome) {
-        nomeUsuarioSpan.textContent = usuario.nome;
-    } else {
-        nomeUsuarioSpan.textContent = 'usuário';
-    }
+    const nomeUsuarioSpan = document.getElementById('nomeUsuario');
+    if (!nomeUsuarioSpan) return;
+    nomeUsuarioSpan.textContent = usuario.nomeUsuario || usuario.nome || 'Usuário';
 }
-
-// Chame atualizarSaudacao() dentro de verificarLogin(), logo após popular usuarioLogado.
-// Exemplo: depois de setar nomeSpan.textContent = `Bem-vindo(a), ${usuarioLogado.nomeUsuario}!`
-// apenas invoque: atualizarSaudacao();
-
-// --- Ajuste em verificarGerente: em vez de mostrar o botão 'gerenciarBtn', agora mostramos o link no menu ---
-async function verificarGerente(idUsuario) {
-    console.log("ID recebido:", idUsuario);
-    try {
-        const response = await fetch(`http://localhost:3001/login/verificarGerente?idusuario=${idUsuario}`);
-        const data = await response.json();
-        console.log("Função chamada", idUsuario);
-        if (data.isGerente === true) {
-            // mostrar link Gerenciar no menu
-            if (menuGerenciarLink) menuGerenciarLink.style.display = 'block';
-        } else {
-            if (menuGerenciarLink) menuGerenciarLink.style.display = 'none';
-        }
-    } catch (error) {
-        console.error('Erro ao verificar se é gerente:', error);
-        if (menuGerenciarLink) menuGerenciarLink.style.display = 'none';
-    }
-}
-
-    
-    </script>
+</script>
 </body>
 </html>
