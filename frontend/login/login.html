@@ -351,13 +351,38 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
           }, 1500);
 
         } else {
-          // Usuário comum cadastrado com sucesso
-          msgCadastro.textContent = 'Usuário cadastrado com sucesso!';
-          msgCadastro.style.color = 'green';
-          setTimeout(() => {
-            window.location.href = '../../index.html';
-          }, 1500);
-        }
+    // ================================
+    //      CADASTRAR COMO CLIENTE
+    // ================================
+    msgCadastro.textContent = 'Cadastrando como cliente...';
+    msgCadastro.style.color = 'blue';
+
+    const respCliente = await fetch('http://localhost:3001/cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            idusuario: idUsuario,
+            datacadastrocliente: new Date()
+        })
+    });
+
+    if (!respCliente.ok) {
+        const erro = await respCliente.json();
+        console.error('Erro ao criar cliente:', erro);
+        msgCadastro.textContent = erro.error || 'Erro ao cadastrar cliente.';
+        msgCadastro.style.color = 'red';
+        return;
+    }
+
+    console.log('Cliente criado com sucesso!');
+    msgCadastro.textContent = 'Cadastro realizado com sucesso!';
+    msgCadastro.style.color = 'green';
+
+    setTimeout(() => {
+        window.location.href = '../../index.html';
+    }, 1500);
+}
+
 
       } catch (error) {
         console.error('Erro completo:', error);
