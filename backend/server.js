@@ -81,6 +81,7 @@ const pagamentoRoutes = require('./routes/pagamentoRoutes');
 const clienteRoutes = require('./routes/clienteRoutes');
 const pagamento_has_formapagamentoRoutes = require('./routes/pagamento_has_formapagamentoRoutes');
 const relatoriosRoutes = require('./routes/relatoriosRoutes');
+const pedidoprodutoRoutes = require('./routes/pedidoprodutoRoutes');
 
 
 
@@ -101,6 +102,7 @@ app.use('/cliente', clienteRoutes);
 app.use('/pedido', pedidoRoutes);
 app.use('/pagamento', pagamentoRoutes);
 app.use('/pagamento_has_formapagamento', pagamento_has_formapagamentoRoutes);
+app.use('/pedidoproduto', pedidoprodutoRoutes);
 
 // Página inicial
 app.get('/', (req, res) => {

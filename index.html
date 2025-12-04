@@ -1,4 +1,4 @@
-<!-- index.html corrigido completo - Zenite Store -->
+<!-- index.html com funcionalidade "Meus Pedidos" -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -35,6 +35,7 @@
 
                 <div id="menuDropdown" class="menu-dropdown" role="menu" aria-hidden="true">
                     <a id="menuGerenciarLink" class="menu-item" href="frontend/menu.html" style="display:none;">Gerenciar</a>
+                    <button class="menu-item" onclick="abrirMeusPedidos()">Meus Pedidos</button>
                     <a class="menu-item" href="frontend/navbar/contato.html">Contato</a>
                     <a class="menu-item" href="frontend/navbar/sobrenos.html">Sobre nós</a>
                     <button id="menuSairBtn" class="menu-item menu-logout" style="color: crimson;">Sair</button>
@@ -90,10 +91,22 @@
         </div>
     </div>
 
+    <!-- MODAL MEUS PEDIDOS -->
+    <div id="pedidosModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">MEUS PEDIDOS</h2>
+                <button class="close-btn" onclick="fecharMeusPedidos()">&times;</button>
+            </div>
+
+            <div id="pedidosContainer"></div>
+        </div>
+    </div>
+
     <footer class="zen-footer">
         <div class="zen-footer-content">
             <img src="backend/uploads/zenite_store_logo_star.png" class="zen-footer-logo">
-            <p class="zen-footer-phrase">“No ponto mais alto, encontramos o que realmente brilha.”</p>
+            <p class="zen-footer-phrase">"No ponto mais alto, encontramos o que realmente brilha."</p>
             <div class="zen-footer-links">
                 <a href="frontend/navbar/sobrenos.html">Sobre nós</a>
                 <a href="frontend/navbar/contato.html">Contato</a>
@@ -202,7 +215,7 @@ async function carregarProdutos() {
 }
 
 //----------------------------------------------
-// RENDERIZAR PRODUTOS (FINAL E CORRETO)
+// RENDERIZAR PRODUTOS
 //----------------------------------------------
 function renderizarProdutos() {
     const container = document.getElementById('produtosContainer');
@@ -230,7 +243,7 @@ function renderizarProdutos() {
             <div class="produto-imagem">
                 ${produto.imagem
                     ? `<img src="http://localhost:3001/${produto.imagem}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">`
-                    : '📦 Sem imagem'}
+                    : '✨'}
             </div>
             <h3 class="produto-nome">${produto.nomeproduto}</h3>
             <p class="produto-preco">R$ ${parseFloat(produto.precounitario).toFixed(2)}</p>
@@ -241,14 +254,13 @@ function renderizarProdutos() {
 `;
 
         container.appendChild(card);
-    }); // end lista.forEach
-} // end renderizarProdutos
+    });
+}
 
 // ---------------------
 // FUNÇÕES DO CARRINHO
 // ---------------------
 function adicionarAoCarrinho(idProduto) {
-    // aceita id como number ou string
     const produto = produtos.find(p => String(p.idproduto) === String(idProduto));
     const input = document.getElementById(`qtd-${idProduto}`);
     const quantidade = input ? parseInt(input.value, 10) || 1 : 1;
@@ -351,7 +363,7 @@ async function finalizarCompra() {
 
     try {
         const pedidoData = {
-            idCliente: usuarioLogado.idCliente || usuarioLogado.idCliente || null,
+            idCliente: usuarioLogado.idCliente || usuarioLogado.idCliente || usuarioLogado.idUsuario || null,
             idUsuario: usuarioLogado.idUsuario || null,
             produtos: carrinho.map(item => ({
                 idProduto: item.idproduto,
@@ -374,7 +386,6 @@ async function finalizarCompra() {
             carrinho = [];
             atualizarCarrinho();
             closeCart();
-            // redireciona para pagamento se necessário
             setTimeout(() => {
                 window.location.href = 'frontend/pagamento/pagamento.html';
             }, 800);
@@ -388,7 +399,171 @@ async function finalizarCompra() {
 }
 
 // ---------------------
-// UTILITÁRIOS (alertas, login, logout, menu)
+// MEUS PEDIDOS
+// ---------------------
+async function abrirMeusPedidos() {
+    if (!usuarioLogado) {
+        mostrarAlerta('Você precisa estar logado!', 'error');
+        return;
+    }
+
+    // Fecha o menu dropdown
+    const menuDropdown = document.getElementById('menuDropdown');
+    if (menuDropdown) {
+        menuDropdown.classList.remove('show');
+        const menuBtn = document.getElementById('menuBtn');
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    // Abre o modal
+    const modal = document.getElementById('pedidosModal');
+    if (modal) modal.classList.add('active');
+
+    // Carrega os pedidos
+    await carregarPedidosUsuario();
+}
+
+function fecharMeusPedidos() {
+    const modal = document.getElementById('pedidosModal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function carregarPedidosUsuario() {
+    const container = document.getElementById('pedidosContainer');
+    if (!container) return;
+
+    container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Carregando pedidos...</div>';
+
+    try {
+        // Busca todos os pedidos
+        const response = await fetch('http://localhost:3001/pedido');
+        const todosPedidos = await response.json();
+
+        console.log('=== DEBUG PEDIDOS ===');
+        console.log('Usuário logado:', usuarioLogado);
+        console.log('Todos os pedidos:', todosPedidos);
+
+        // Se não houver pedidos
+        if (!Array.isArray(todosPedidos) || todosPedidos.length === 0) {
+            container.innerHTML = '<div class="empty-cart">Nenhum pedido encontrado no sistema</div>';
+            return;
+        }
+
+        // Filtra pedidos do usuário logado pelo idcliente (minúsculo!)
+        const idClienteUsuario = usuarioLogado.idCliente || usuarioLogado.idcliente || usuarioLogado.idUsuario;
+        const pedidosUsuario = todosPedidos.filter(pedido => {
+            const idClientePedido = pedido.idcliente || pedido.idCliente;
+            return Number(idClientePedido) === Number(idClienteUsuario);
+        });
+
+        console.log('ID Cliente do usuário:', idClienteUsuario);
+        console.log('Pedidos filtrados:', pedidosUsuario);
+
+        if (pedidosUsuario.length === 0) {
+            container.innerHTML = '<div class="empty-cart">Você ainda não fez nenhum pedido</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        // Renderiza cada pedido
+        for (const pedido of pedidosUsuario) {
+            await renderizarPedido(pedido, container);
+        }
+
+    } catch (error) {
+        console.error('Erro ao carregar pedidos:', error);
+        container.innerHTML = '<div class="empty-cart">Erro ao carregar pedidos. Tente novamente.</div>';
+    }
+}
+
+async function renderizarPedido(pedido, container) {
+    const pedidoDiv = document.createElement('div');
+    pedidoDiv.className = 'pedido-card';
+    
+    const idPedido = pedido.idpedido || pedido.idPedido;
+    const dataPedido = pedido.datapedido || pedido.dataPedido;
+    const valorTotal = parseFloat(pedido.valortotal || pedido.valorTotal || 0);
+
+    // Busca os itens do pedido
+    try {
+        const responseItens = await fetch(`http://localhost:3001/pedidoproduto/${idPedido}`);
+        const itens = await responseItens.json();
+
+        let itensHTML = '';
+        
+        if (Array.isArray(itens) && itens.length > 0) {
+            for (const item of itens) {
+                const idProduto = item.idproduto || item.idProduto;
+                const nomeProduto = item.nomeproduto || item.nomeProduto || 'Produto';
+                const quantidade = item.quantidade || 0;
+                const precoUnitario = parseFloat(item.precounitario || item.precoUnitario || 0);
+                const subtotal = quantidade * precoUnitario;
+
+                // Busca informações do produto para pegar a imagem
+                let imagemProduto = '';
+                try {
+                    const produtoResponse = await fetch(`http://localhost:3001/produto/${idProduto}`);
+                    const produto = await produtoResponse.json();
+                    imagemProduto = produto.imagem || '';
+                } catch (err) {
+                    console.error('Erro ao buscar produto:', err);
+                }
+
+                itensHTML += `
+                    <div class="pedido-item">
+                        <div class="pedido-item-img">
+                            ${imagemProduto 
+                                ? `<img src="http://localhost:3001/${imagemProduto}" alt="${nomeProduto}">`
+                                : '<div style="width:60px;height:60px;background:#f0f0f0;border-radius:8px;display:flex;align-items:center;justify-content:center;">✨</div>'
+                            }
+                        </div>
+                        <div class="pedido-item-info">
+                            <div class="pedido-item-nome">${nomeProduto}</div>
+                            <div class="pedido-item-detalhes">
+                                Qtd: ${quantidade} | Preço: R$ ${precoUnitario.toFixed(2)} | Subtotal: R$ ${subtotal.toFixed(2)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
+            itensHTML = '<p style="color:#999; text-align:center;">Nenhum item encontrado</p>';
+        }
+
+        pedidoDiv.innerHTML = `
+            <div class="pedido-header">
+                <div>
+                    <div class="pedido-numero">Pedido #${idPedido}</div>
+                    <div class="pedido-data">${new Date(dataPedido).toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div class="pedido-total">R$ ${valorTotal.toFixed(2)}</div>
+            </div>
+            <div class="pedido-itens">
+                ${itensHTML}
+            </div>
+        `;
+
+        container.appendChild(pedidoDiv);
+
+    } catch (error) {
+        console.error('Erro ao buscar itens do pedido:', error);
+        pedidoDiv.innerHTML = `
+            <div class="pedido-header">
+                <div>
+                    <div class="pedido-numero">Pedido #${idPedido}</div>
+                    <div class="pedido-data">${new Date(dataPedido).toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div class="pedido-total">R$ ${valorTotal.toFixed(2)}</div>
+            </div>
+            <p style="color:#999; padding:15px;">Erro ao carregar itens do pedido</p>
+        `;
+        container.appendChild(pedidoDiv);
+    }
+}
+
+// ---------------------
+// UTILITÁRIOS
 // ---------------------
 function mostrarAlerta(mensagem, tipo) {
     const container = document.getElementById('alertContainer');
@@ -406,12 +581,12 @@ function logout() {
     usuarioLogado = null;
     carrinho = [];
     atualizarCarrinho();
-    verificarLogin(); // já existe função acima
+    verificarLogin();
     mostrarAlerta('Logout realizado com sucesso!', 'success');
 }
 
 // ---------------------
-// CONTROLES DO MENU (abrir/fechar, sair)
+// CONTROLES DO MENU
 // ---------------------
 const menuBtn = document.getElementById('menuBtn');
 const menuDropdown = document.getElementById('menuDropdown');
@@ -446,7 +621,6 @@ if (menuSairBtn) {
     });
 }
 
-// Atualiza saudação (se existir)
 function atualizarSaudacao() {
     const user = localStorage.getItem('usuarioLogado');
     if (!user) return;
