@@ -2,7 +2,7 @@
 
 O ZeniteStore é um sistema web full-stack desenvolvido para gerenciar todas as operações de uma loja de pequeno ou médio porte, integrando um backend em Node.js/Express e um frontend modular em HTML/CSS/JavaScript. O sistema oferece um ambiente completo para administração de vendas, produtos, categorias, clientes, usuários, pedidos e pagamentos, incluindo suporte para upload de imagens. O backend segue uma arquitetura organizada com controllers, rotas e integração com PostgreSQL, enquanto o frontend utiliza requisições JSON e manipulação dinâmica do DOM para exibir cadastros, relatórios, carrinho, fluxos de venda e autenticação. Com diferenciação de permissões (gerente e funcionário), armazenamento de sessões, diretórios dedicados a uploads e documentação, o ZeniteStore consolida estoque, fluxo de vendas, controle de usuários e recursos administrativos em um único sistema eficiente, moderno e extensível.
 
-Parte 2 - Relatório do projeto do 4o Bimestre
+*Parte 2 - Relatório do projeto do 4o Bimestre*
 Disciplina DW1
 Curso Técnico Integrado em Informática para Internet
 UTFPR Campus Campo Mourão
@@ -18,4 +18,5 @@ As IAs se tornaram parte da minha rotina. Elas ajudaram na criação de trechos 
 Ao final, olhando para o Zenite Store pronto, percebi que consegui entregar muito mais do que eu esperava. A estrutura ficou totalmente diferente da minha visão inicial. Ficou mais organizada e uns 50% mais profissional. A interface ficou como imaginada, mas o sistema por trás dela evoluiu de um simples CRUD para uma aplicação completa, com permissões, relatórios, carrinho, uploads, sessões e uma série de utilidades reais de um sistema de vendas. Esse projeto me fez entender além do desenvolvimento web. Aprendi como um sistema nasce, cresce, se organiza e ganha vida.
 Concluo esta etapa com um conhecimento muito mais sólido, especialmente no backend, que se tornou minha parte preferida do processo. Desenvolver o Zenite Store me proporcionou bagagem técnica, um tapa na cara pra ser mais organizada e muita autonomia para testar novas coisas. Foi uma experiência intensa, mas extremamente valiosa. Professor, muito obrigada por ser uma luz. Quando tudo parecia estar desabando, foram suas palavras e alguns puxões de orelha que me fizeram ativar um turbo pra resolver esses problemas. Ao final do segundo ano, só consigo pensar em como nossa turma têm sorte em ter um professor tão fora do comum. 
 Considere continuar dando aula pra gente no terceiro ano.
+
 Obrigada!
