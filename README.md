@@ -7,12 +7,12 @@ O ZeniteStore é um sistema web full-stack desenvolvido para gerenciar todas as 
 
 ### **Parte 2 - Relatório do projeto do 4o Bimestre**
 
-Disciplina DW1 /n
-Curso Técnico Integrado em Informática para Internet
-UTFPR Campus Campo Mourão
-Professor Radames
-Aluna Maria Elisa Murback
-Data de entrega 04/12/2025
+Disciplina DW1\
+Curso Técnico Integrado em Informática para Internet\
+UTFPR Campus Campo Mourão\
+Professor Radames\
+Aluna Maria Elisa Murback\
+Data de entrega 04/12/2025\
 
 
 
@@ -26,6 +26,7 @@ Concluo esta etapa com um conhecimento muito mais sólido, especialmente no back
 Considere continuar dando aula pra gente no terceiro ano.
 
 Obrigada!
+
 
 
 
